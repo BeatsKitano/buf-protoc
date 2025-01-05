@@ -12,10 +12,18 @@ import (
 
 	v1pb "buf-protoc/proto/gen/go/v1"
 
+	"google.golang.org/genproto/googleapis/api/annotations"
+
+	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/reflect/protoreflect"
+	"google.golang.org/protobuf/types/descriptorpb"
+
 	grpcruntime "github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/reflection"
 	"google.golang.org/grpc/status"
 
 	"github.com/soheilhy/cmux"
@@ -53,11 +61,16 @@ func NewServer(port int) *Server {
 	m := cmux.New(lis)
 
 	grpcServer := grpc.NewServer(
+		grpc.ChainUnaryInterceptor(authInterceptor),
 		// Override the maximum receiving message size to 100M for uploading large sheets.
 		grpc.MaxRecvMsgSize(100*1024*1024),
 		grpc.InitialWindowSize(100000000),
 		grpc.InitialConnWindowSize(100000000),
 	)
+
+	// 要获取proto文件中的服务描述符，可以通过以下方式：
+	// Register reflection service on gRPC server.
+	reflection.Register(grpcServer)
 
 	// Register the gRPC server.
 	v1pb.RegisterHelloServiceServer(grpcServer, server)
@@ -197,8 +210,34 @@ func (s *Server) Shutdown(ctx context.Context) error {
 	return nil
 }
 
+func authInterceptor(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
+
+	md, ok := metadata.FromIncomingContext(ctx)
+	if !ok {
+		return nil, status.Errorf(codes.Unauthenticated, "missing metadata")
+	}
+
+	for k, v := range md {
+		slog.Info("metadata", k, v)
+	}
+	// ... 验证 token 的逻辑 ...
+	// if !isValidToken(token) {
+	// 	return nil, status.Errorf(codes.Unauthenticated, "invalid token")
+	// }
+	// 验证通过，继续调用后续处理函数
+	return handler(ctx, req)
+}
+
 func (s *Server) GetUser(ctx context.Context, req *v1pb.Req) (*v1pb.User, error) {
-	fmt.Println("GetUser")
+	// 从 metadata 中获取方法名
+	md, ok := metadata.FromIncomingContext(ctx)
+	if !ok {
+		return nil, status.Error(codes.InvalidArgument, "metadata not found")
+	}
+	for k, v := range md {
+		slog.Info("metadata", k, v)
+	}
+
 	if err := protovalidate.Validate(req); err != nil {
 		fmt.Println("error:\n", err)
 		return nil, status.Error(codes.InvalidArgument, err.Error())
@@ -207,4 +246,34 @@ func (s *Server) GetUser(ctx context.Context, req *v1pb.Req) (*v1pb.User, error)
 	return &v1pb.User{
 		Name: "John Doe",
 	}, nil
+}
+
+// printMethodOptions 打印方法描述符中的所有选项
+func printMethodOptions(method protoreflect.MethodDescriptor) {
+	// 获取方法选项
+	options := method.Options().(*descriptorpb.MethodOptions)
+
+	// 打印 google.api.http 选项
+	if proto.HasExtension(options, annotations.E_Http) {
+		httpRule := proto.GetExtension(options, annotations.E_Http).(*annotations.HttpRule)
+		fmt.Printf("google.api.http: %v\n", httpRule)
+	}
+
+	// 打印 google.api.method_signature 选项
+	if proto.HasExtension(options, annotations.E_MethodSignature) {
+		methodSignature := proto.GetExtension(options, annotations.E_MethodSignature).([]string)
+		fmt.Printf("google.api.method_signature: %v\n", methodSignature)
+	}
+
+	// 打印 bytebase.v1.permission 选项
+	if proto.HasExtension(options, v1pb.E_Permission) {
+		permission := proto.GetExtension(options, v1pb.E_Permission).(string)
+		fmt.Printf("beats.v1.permission: %v\n", permission)
+	}
+
+	// 打印 bytebase.v1.auth_method 选项
+	if proto.HasExtension(options, v1pb.E_AuthMethod) {
+		authMethod := proto.GetExtension(options, v1pb.E_AuthMethod).(v1pb.AuthMethod)
+		fmt.Printf("beats.v1.auth_method: %v\n", authMethod)
+	}
 }

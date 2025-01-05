@@ -208,7 +208,9 @@ export const HelloServiceDefinition = {
       responseStream: false,
       options: {
         _unknownFields: {
-          8410: [new Uint8Array([4, 110, 97, 109, 101])],
+          8410: [new Uint8Array([17, 104, 101, 108, 108, 111, 44, 117, 112, 100, 97, 116, 101, 95, 109, 97, 115, 107])],
+          800010: [new Uint8Array([15, 104, 103, 46, 115, 101, 116, 116, 105, 110, 103, 115, 46, 115, 101, 116])],
+          800016: [new Uint8Array([1])],
           578365826: [
             new Uint8Array([
               23,

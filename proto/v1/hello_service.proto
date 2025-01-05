@@ -10,11 +10,18 @@ import "google/protobuf/timestamp.proto";
 import "google/protobuf/field_mask.proto";
 import "buf/validate/validate.proto";
 
+import "v1/annotation.proto";
+
 service HelloService {
  
   rpc GetUser(Req) returns (User) {
-    option (google.api.http) = {post: "/v1/{name=users/*}", body: "*" };
-    option (google.api.method_signature) = "name";
+    option (google.api.http) = {
+      post: "/v1/{name=users/*}", 
+      body: "*" 
+    };
+    option (google.api.method_signature) = "hello,update_mask";
+    option (bytebase.v1.permission) = "hg.settings.set";
+    option (bytebase.v1.auth_method) = IAM;
   }
 } 
 
