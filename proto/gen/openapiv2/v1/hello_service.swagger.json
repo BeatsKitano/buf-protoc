@@ -1,0 +1,120 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "v1/hello_service.proto",
+    "version": "version not set"
+  },
+  "tags": [
+    {
+      "name": "HelloService"
+    }
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/v1/{name}": {
+      "post": {
+        "operationId": "HelloService_GetUser",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1User"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "name",
+            "description": "姓名\nThe name of the branch.\nFormat: projects/{project}/branches/{branch}\n{branch} should be the id of a sheet.",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "pattern": "users/[^/]+"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/HelloServiceGetUserBody"
+            }
+          }
+        ],
+        "tags": [
+          "HelloService"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "HelloServiceGetUserBody": {
+      "type": "object",
+      "properties": {
+        "age": {
+          "type": "integer",
+          "format": "int32",
+          "title": "年龄\n3. 年龄限制"
+        },
+        "purchaseDate": {
+          "type": "string",
+          "format": "date-time",
+          "title": "4. 日期限制"
+        },
+        "deliveryDate": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "title": "*\n请求参数"
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {}
+    },
+    "rpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    },
+    "v1User": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The name of the user.\nFormat: users/{user}. {user} is a system-generated unique ID.",
+          "readOnly": true
+        }
+      }
+    }
+  }
+}

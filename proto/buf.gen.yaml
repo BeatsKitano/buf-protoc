@@ -1,0 +1,49 @@
+version: v2
+managed:
+  enabled: true
+  # override:
+    # - file_option: go_package_prefix
+    #   # <module_name>   : name in go.mod
+    #   # <relative_path> : where generated code should be output
+    #   value: # <module_name>/<relative_path>
+  # Remove `disable` field if googleapis is not used
+  disable:
+    - file_option: go_package_prefix
+      module: buf.build/bufbuild/protovalidate
+plugins:
+  # dependencies
+  - remote: buf.build/protocolbuffers/go
+    out: gen/go
+    opt:
+      - paths=source_relative
+  - remote: buf.build/grpc/go
+    out: gen/go
+    opt: paths=source_relative   
+  - remote: buf.build/grpc-ecosystem/gateway
+    out: gen/go
+    opt:
+      - paths=source_relative 
+  # frontend
+  - remote: buf.build/community/stephenh-ts-proto:v1.163.0
+    out: ../frontend/src/types/proto
+    # reference: https://github.com/deeplay-io/nice-grpc/blob/master/packages/nice-grpc-web/README.md#using-ts-proto
+    opt:
+      - env=browser
+      - outputServices=generic-definitions
+      - useExactTypes=false
+      - esModuleInterop=true
+      - forceLong=long 
+  # generate openapi documentation for api
+  - remote: buf.build/grpc-ecosystem/openapiv2:v2.19.1
+    out: gen/openapiv2
+  - remote: buf.build/community/pseudomuto-doc:v1.5.1
+    out: gen/grpc-doc
+    opt:
+      - markdown,README.md,source_relative
+  - remote: buf.build/community/pseudomuto-doc:v1.5.1
+    out: gen/grpc-doc
+    opt:
+    - html,index.html,source_relative
+  - remote: buf.build/community/google-gnostic-openapi:v0.7.0
+    out: gen/grpc-doc
+    opt: paths=source_relative,enum_type=string

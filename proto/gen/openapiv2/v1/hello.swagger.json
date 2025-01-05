@@ -1,0 +1,124 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "v1/hello.proto",
+    "version": "version not set"
+  },
+  "tags": [
+    {
+      "name": "HelloService"
+    }
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/v1/{name}": {
+      "get": {
+        "operationId": "HelloService_GetUser",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1User"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "name",
+            "description": "姓名\nThe name of the branch.\nFormat: projects/{project}/branches/{branch}\n{branch} should be the id of a sheet.",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "pattern": "users/[^/]+"
+          },
+          {
+            "name": "ip",
+            "description": "1. 必须是ipv4或ipv6",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "byte"
+          },
+          {
+            "name": "mask",
+            "description": "掩码\n掩码范围\n\n掩码2",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int64"
+          },
+          {
+            "name": "age",
+            "description": "年龄\n3. 年龄限制",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "deliveryDate",
+            "description": "日期\n4. 日期限制",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "date-time"
+          }
+        ],
+        "tags": [
+          "HelloService"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {}
+    },
+    "rpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    },
+    "v1User": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The name of the user.\nFormat: users/{user}. {user} is a system-generated unique ID.",
+          "readOnly": true
+        }
+      }
+    }
+  }
+}
