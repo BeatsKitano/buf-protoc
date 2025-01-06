@@ -37,11 +37,13 @@
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| method_signature | [string](#string) |  |  |
-| allow_without_credential | [bool](#bool) |  |  |
-| permission | [string](#string) |  |  |
-| auth_method | [AuthMethod](#api-v1-AuthMethod) |  |  |
-| audit | [bool](#bool) |  |  |
+| method_signature | [string](#string) |  | Method signature 方法签名 |
+| allow_without_credential | [bool](#bool) |  | Whether to allow access without credentials 是否允许无凭证访问 |
+| permission | [string](#string) |  | Permission required to access the method 访问该方法所需的权限 |
+| auth_method | [AuthMethod](#api-v1-AuthMethod) |  | Authorization method 授权方法 |
+| audit | [bool](#bool) |  | Whether to audit the method 是否审计该方法 |
+| rate_limit | [int32](#int32) |  | Rate limit per minute 每分钟的速率限制 |
+| timeout | [int32](#int32) |  | Timeout in milliseconds 超时控制（毫秒） |
 
 
 
@@ -57,10 +59,12 @@
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | service_signature | [string](#string) |  |  |
-| allow_without_credential | [bool](#bool) |  |  |
-| permission | [string](#string) |  |  |
-| auth_method | [AuthMethod](#api-v1-AuthMethod) |  |  |
-| audit | [bool](#bool) |  |  |
+| allow_without_credential | [bool](#bool) |  | Whether to allow access without credentials 是否允许无凭证访问 |
+| permission | [string](#string) |  | Permission required to access the method 访问该方法所需的权限 |
+| auth_method | [AuthMethod](#api-v1-AuthMethod) |  | Authorization method 授权方法 |
+| audit | [bool](#bool) |  | Whether to audit the method 是否审计该方法 |
+| rate_limit | [int32](#int32) |  | Rate limit per minute 每分钟的速率限制 |
+| timeout | [int32](#int32) |  | Timeout in milliseconds 超时控制（毫秒） |
 
 
 

@@ -314,10 +314,48 @@ func generateToken(userName string, userID int, aud string, expirationTime time.
 }
 
 func getAuthContext(fullMethod string) (*common.AuthContext, error) {
+	fmt.Println("fullMethod:", fullMethod)
 	methodTokens := strings.Split(fullMethod, "/")
 	if len(methodTokens) != 3 {
 		return nil, errs.Errorf("invalid full method name %q", fullMethod)
 	}
+
+	fmt.Println("methodTokens:", methodTokens)
+
+	protoregistry.GlobalFiles.RangeFiles(func(fd protoreflect.FileDescriptor) bool {
+		if strings.HasPrefix(string(fd.FullName()), "api") {
+			services := fd.Services()
+			for i := 0; i < services.Len(); i++ {
+				sd := services.Get(i)
+
+				sdFullname := string(sd.FullName())
+
+				if strings.HasPrefix(sdFullname, "api") {
+					methods := sd.Methods()
+
+					for k := 0; k < methods.Len(); k++ {
+						md := methods.Get(k)
+
+						fmt.Println("\tmd.name:", md.FullName())
+
+						options := md.Options().(*descriptorpb.MethodOptions)
+
+						fmt.Println("\t\toptions:", options)
+
+						me, ok := proto.GetExtension(options, v1pb.E_MethodExtend).(*v1pb.MethodExtend)
+						if !ok {
+							return false
+						}
+
+						fmt.Println("\t\t\tme:", me)
+					}
+				}
+			}
+		}
+
+		return true
+	})
+
 	rd, err := protoregistry.GlobalFiles.FindDescriptorByName(protoreflect.FullName(methodTokens[1]))
 	if err != nil {
 		return nil, errs.Wrapf(err, "invalid registry service descriptor, full method name %q", fullMethod)

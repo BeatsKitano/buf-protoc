@@ -47,22 +47,86 @@ export function authMethodToJSON(object: AuthMethod): string {
 
 export interface ServiceExtend {
   serviceSignature: string;
+  /**
+   * Whether to allow access without credentials
+   * 是否允许无凭证访问
+   */
   allowWithoutCredential: boolean;
+  /**
+   * Permission required to access the method
+   * 访问该方法所需的权限
+   */
   permission: string;
+  /**
+   * Authorization method
+   * 授权方法
+   */
   authMethod: AuthMethod;
+  /**
+   * Whether to audit the method
+   * 是否审计该方法
+   */
   audit: boolean;
+  /**
+   * Rate limit per minute
+   * 每分钟的速率限制
+   */
+  rateLimit: number;
+  /**
+   * Timeout in milliseconds
+   * 超时控制（毫秒）
+   */
+  timeout: number;
 }
 
 export interface MethodExtend {
+  /**
+   * Method signature
+   * 方法签名
+   */
   methodSignature: string;
+  /**
+   * Whether to allow access without credentials
+   * 是否允许无凭证访问
+   */
   allowWithoutCredential: boolean;
+  /**
+   * Permission required to access the method
+   * 访问该方法所需的权限
+   */
   permission: string;
+  /**
+   * Authorization method
+   * 授权方法
+   */
   authMethod: AuthMethod;
+  /**
+   * Whether to audit the method
+   * 是否审计该方法
+   */
   audit: boolean;
+  /**
+   * Rate limit per minute
+   * 每分钟的速率限制
+   */
+  rateLimit: number;
+  /**
+   * Timeout in milliseconds
+   * 超时控制（毫秒）
+   */
+  timeout: number;
 }
 
 function createBaseServiceExtend(): ServiceExtend {
-  return { serviceSignature: "", allowWithoutCredential: false, permission: "", authMethod: 0, audit: false };
+  return {
+    serviceSignature: "",
+    allowWithoutCredential: false,
+    permission: "",
+    authMethod: 0,
+    audit: false,
+    rateLimit: 0,
+    timeout: 0,
+  };
 }
 
 export const ServiceExtend = {
@@ -81,6 +145,12 @@ export const ServiceExtend = {
     }
     if (message.audit === true) {
       writer.uint32(40).bool(message.audit);
+    }
+    if (message.rateLimit !== 0) {
+      writer.uint32(80).int32(message.rateLimit);
+    }
+    if (message.timeout !== 0) {
+      writer.uint32(88).int32(message.timeout);
     }
     return writer;
   },
@@ -127,6 +197,20 @@ export const ServiceExtend = {
 
           message.audit = reader.bool();
           continue;
+        case 10:
+          if (tag !== 80) {
+            break;
+          }
+
+          message.rateLimit = reader.int32();
+          continue;
+        case 11:
+          if (tag !== 88) {
+            break;
+          }
+
+          message.timeout = reader.int32();
+          continue;
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -145,6 +229,8 @@ export const ServiceExtend = {
       permission: isSet(object.permission) ? globalThis.String(object.permission) : "",
       authMethod: isSet(object.authMethod) ? authMethodFromJSON(object.authMethod) : 0,
       audit: isSet(object.audit) ? globalThis.Boolean(object.audit) : false,
+      rateLimit: isSet(object.rateLimit) ? globalThis.Number(object.rateLimit) : 0,
+      timeout: isSet(object.timeout) ? globalThis.Number(object.timeout) : 0,
     };
   },
 
@@ -165,6 +251,12 @@ export const ServiceExtend = {
     if (message.audit === true) {
       obj.audit = message.audit;
     }
+    if (message.rateLimit !== 0) {
+      obj.rateLimit = Math.round(message.rateLimit);
+    }
+    if (message.timeout !== 0) {
+      obj.timeout = Math.round(message.timeout);
+    }
     return obj;
   },
 
@@ -178,12 +270,22 @@ export const ServiceExtend = {
     message.permission = object.permission ?? "";
     message.authMethod = object.authMethod ?? 0;
     message.audit = object.audit ?? false;
+    message.rateLimit = object.rateLimit ?? 0;
+    message.timeout = object.timeout ?? 0;
     return message;
   },
 };
 
 function createBaseMethodExtend(): MethodExtend {
-  return { methodSignature: "", allowWithoutCredential: false, permission: "", authMethod: 0, audit: false };
+  return {
+    methodSignature: "",
+    allowWithoutCredential: false,
+    permission: "",
+    authMethod: 0,
+    audit: false,
+    rateLimit: 0,
+    timeout: 0,
+  };
 }
 
 export const MethodExtend = {
@@ -202,6 +304,12 @@ export const MethodExtend = {
     }
     if (message.audit === true) {
       writer.uint32(40).bool(message.audit);
+    }
+    if (message.rateLimit !== 0) {
+      writer.uint32(80).int32(message.rateLimit);
+    }
+    if (message.timeout !== 0) {
+      writer.uint32(88).int32(message.timeout);
     }
     return writer;
   },
@@ -248,6 +356,20 @@ export const MethodExtend = {
 
           message.audit = reader.bool();
           continue;
+        case 10:
+          if (tag !== 80) {
+            break;
+          }
+
+          message.rateLimit = reader.int32();
+          continue;
+        case 11:
+          if (tag !== 88) {
+            break;
+          }
+
+          message.timeout = reader.int32();
+          continue;
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -266,6 +388,8 @@ export const MethodExtend = {
       permission: isSet(object.permission) ? globalThis.String(object.permission) : "",
       authMethod: isSet(object.authMethod) ? authMethodFromJSON(object.authMethod) : 0,
       audit: isSet(object.audit) ? globalThis.Boolean(object.audit) : false,
+      rateLimit: isSet(object.rateLimit) ? globalThis.Number(object.rateLimit) : 0,
+      timeout: isSet(object.timeout) ? globalThis.Number(object.timeout) : 0,
     };
   },
 
@@ -286,6 +410,12 @@ export const MethodExtend = {
     if (message.audit === true) {
       obj.audit = message.audit;
     }
+    if (message.rateLimit !== 0) {
+      obj.rateLimit = Math.round(message.rateLimit);
+    }
+    if (message.timeout !== 0) {
+      obj.timeout = Math.round(message.timeout);
+    }
     return obj;
   },
 
@@ -299,6 +429,8 @@ export const MethodExtend = {
     message.permission = object.permission ?? "";
     message.authMethod = object.authMethod ?? 0;
     message.audit = object.audit ?? false;
+    message.rateLimit = object.rateLimit ?? 0;
+    message.timeout = object.timeout ?? 0;
     return message;
   },
 };
