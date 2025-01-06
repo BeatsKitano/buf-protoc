@@ -91,6 +91,7 @@ type Server struct {
 func NewServer(port string, profile *config.Profile) *Server {
 	server := &Server{
 		methodExtends: make(map[string]*v1pb.MethodExtend, 0),
+		port:          port,
 	}
 
 	protoregistry.GlobalFiles.RangeFiles(func(fd protoreflect.FileDescriptor) bool {
@@ -122,7 +123,7 @@ func NewServer(port string, profile *config.Profile) *Server {
 		panic(err)
 	}
 
-	m := cmux.New(lis)
+	server.muxServer = cmux.New(lis)
 
 	state, err := state.New()
 	if err != nil {
@@ -134,7 +135,8 @@ func NewServer(port string, profile *config.Profile) *Server {
 	ratelimitProvider := ratelimit.New(server.methodExtends)
 	timeoutProvider := timeout.New(server.methodExtends)
 
-	grpcServer := grpc.NewServer(
+	grpc.EnableTracing = true
+	server.grpcServer = grpc.NewServer(
 		grpc.ChainUnaryInterceptor(
 			authProvider.AuthenticationInterceptor,
 			ratelimitProvider.RateLimitInterceptor,
@@ -147,22 +149,21 @@ func NewServer(port string, profile *config.Profile) *Server {
 
 	// 要获取proto文件中的服务描述符，可以通过以下方式：
 	// Register reflection service on gRPC server.
-	reflection.Register(grpcServer)
+	reflection.Register(server.grpcServer)
 
 	// Register the gRPC server.
-	v1pb.RegisterHelloServiceServer(grpcServer, server)
+	v1pb.RegisterHelloServiceServer(server.grpcServer, server)
 
 	// Create Echo instance.
-	e := echo.New()
-	e.HideBanner = true
-	e.HidePort = false
-	e.Use(middleware.Logger())
-	e.Use(middleware.Recover())
+	server.echoServer = echo.New()
+	server.echoServer.HideBanner = true
+	server.echoServer.HidePort = false
+	server.echoServer.Use(middleware.Logger())
+	server.echoServer.Use(middleware.Recover())
 
 	// Create HTTP server using grpc-gateway.
 	// gatewayModifier := auth.GatewayResponseModifier{Store: s.store}
-	opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
-	grpcGatewayMux := grpcruntime.NewServeMux(
+	server.grpcGatewayMux = grpcruntime.NewServeMux(
 		grpcruntime.WithRoutingErrorHandler(func(ctx context.Context, sm *grpcruntime.ServeMux, m grpcruntime.Marshaler, w http.ResponseWriter, r *http.Request, httpStatus int) {
 			if httpStatus != http.StatusNotFound {
 				grpcruntime.DefaultRoutingErrorHandler(ctx, sm, m, w, r, httpStatus)
@@ -179,20 +180,14 @@ func NewServer(port string, profile *config.Profile) *Server {
 	)
 
 	ctx := context.Background()
-	err = v1pb.RegisterHelloServiceHandlerFromEndpoint(ctx, grpcGatewayMux, port, opts)
+	err = v1pb.RegisterHelloServiceHandlerFromEndpoint(ctx, server.grpcGatewayMux, port, []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())})
 	if err != nil {
 		fmt.Printf("failed to register handler: %v\n", err)
 		panic(err)
 	}
 
 	// Register grpc-gateway mux with Echo
-	e.Any("/*", echo.WrapHandler(grpcGatewayMux))
-
-	server.echoServer = e
-	server.grpcServer = grpcServer
-	server.muxServer = m
-	server.grpcGatewayMux = grpcGatewayMux
-	server.port = port
+	server.echoServer.Any("/*", echo.WrapHandler(server.grpcGatewayMux))
 
 	return server
 }
@@ -201,16 +196,12 @@ func (s *Server) Run() {
 	_, cancel := context.WithCancel(context.Background())
 	s.cancel = cancel
 
-	// Match gRPC connections.
-	// grpcL := s.muxServer.Match(cmux.HTTP2HeaderField("content-type", "application/grpc"))
-
 	grpcL := s.muxServer.MatchWithWriters(cmux.HTTP2MatchHeaderFieldSendSettings("content-type", "application/grpc"))
 
 	// Match HTTP connections.
 	httpL := s.muxServer.Match(cmux.HTTP1Fast())
 
 	go func() {
-
 		fmt.Println("starting gRPC server")
 		if err := s.grpcServer.Serve(grpcL); err != nil {
 			panic(err)
@@ -228,7 +219,7 @@ func (s *Server) Run() {
 	}()
 
 	// Start cmux serving.
-	fmt.Printf("starting cmux server")
+	fmt.Println("starting cmux server")
 	if err := s.muxServer.Serve(); err != nil {
 		panic(err)
 	}

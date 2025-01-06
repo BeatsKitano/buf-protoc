@@ -81,6 +81,11 @@ export interface MethodExtend {
    * 超时控制（毫秒）
    */
   timeout: number;
+  /**
+   * Concurrent
+   * 并发控制
+   */
+  concurrent: number;
 }
 
 function createBaseMethodExtend(): MethodExtend {
@@ -92,31 +97,35 @@ function createBaseMethodExtend(): MethodExtend {
     audit: false,
     rpm: 0,
     timeout: 0,
+    concurrent: 0,
   };
 }
 
 export const MethodExtend = {
   encode(message: MethodExtend, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.methodSignature !== "") {
-      writer.uint32(10).string(message.methodSignature);
+      writer.uint32(800010).string(message.methodSignature);
     }
     if (message.allowWithoutCredential === true) {
-      writer.uint32(16).bool(message.allowWithoutCredential);
+      writer.uint32(800016).bool(message.allowWithoutCredential);
     }
     if (message.permission !== "") {
-      writer.uint32(26).string(message.permission);
+      writer.uint32(800026).string(message.permission);
     }
     if (message.authMethod !== 0) {
-      writer.uint32(32).int32(message.authMethod);
+      writer.uint32(800032).int32(message.authMethod);
     }
     if (message.audit === true) {
-      writer.uint32(40).bool(message.audit);
+      writer.uint32(800040).bool(message.audit);
     }
     if (message.rpm !== 0) {
-      writer.uint32(80).int32(message.rpm);
+      writer.uint32(800048).int32(message.rpm);
     }
     if (message.timeout !== 0) {
-      writer.uint32(88).int32(message.timeout);
+      writer.uint32(800056).int32(message.timeout);
+    }
+    if (message.concurrent !== 0) {
+      writer.uint32(800064).int32(message.concurrent);
     }
     return writer;
   },
@@ -128,54 +137,61 @@ export const MethodExtend = {
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
-        case 1:
-          if (tag !== 10) {
+        case 100001:
+          if (tag !== 800010) {
             break;
           }
 
           message.methodSignature = reader.string();
           continue;
-        case 2:
-          if (tag !== 16) {
+        case 100002:
+          if (tag !== 800016) {
             break;
           }
 
           message.allowWithoutCredential = reader.bool();
           continue;
-        case 3:
-          if (tag !== 26) {
+        case 100003:
+          if (tag !== 800026) {
             break;
           }
 
           message.permission = reader.string();
           continue;
-        case 4:
-          if (tag !== 32) {
+        case 100004:
+          if (tag !== 800032) {
             break;
           }
 
           message.authMethod = reader.int32() as any;
           continue;
-        case 5:
-          if (tag !== 40) {
+        case 100005:
+          if (tag !== 800040) {
             break;
           }
 
           message.audit = reader.bool();
           continue;
-        case 10:
-          if (tag !== 80) {
+        case 100006:
+          if (tag !== 800048) {
             break;
           }
 
           message.rpm = reader.int32();
           continue;
-        case 11:
-          if (tag !== 88) {
+        case 100007:
+          if (tag !== 800056) {
             break;
           }
 
           message.timeout = reader.int32();
+          continue;
+        case 100008:
+          if (tag !== 800064) {
+            break;
+          }
+
+          message.concurrent = reader.int32();
           continue;
       }
       if ((tag & 7) === 4 || tag === 0) {
@@ -197,6 +213,7 @@ export const MethodExtend = {
       audit: isSet(object.audit) ? globalThis.Boolean(object.audit) : false,
       rpm: isSet(object.rpm) ? globalThis.Number(object.rpm) : 0,
       timeout: isSet(object.timeout) ? globalThis.Number(object.timeout) : 0,
+      concurrent: isSet(object.concurrent) ? globalThis.Number(object.concurrent) : 0,
     };
   },
 
@@ -223,6 +240,9 @@ export const MethodExtend = {
     if (message.timeout !== 0) {
       obj.timeout = Math.round(message.timeout);
     }
+    if (message.concurrent !== 0) {
+      obj.concurrent = Math.round(message.concurrent);
+    }
     return obj;
   },
 
@@ -238,6 +258,7 @@ export const MethodExtend = {
     message.audit = object.audit ?? false;
     message.rpm = object.rpm ?? 0;
     message.timeout = object.timeout ?? 0;
+    message.concurrent = object.concurrent ?? 0;
     return message;
   },
 };

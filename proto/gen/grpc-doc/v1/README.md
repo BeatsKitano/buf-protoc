@@ -42,6 +42,7 @@
 | audit | [bool](#bool) |  | Whether to audit the method 是否审计该方法 |
 | rpm | [int32](#int32) |  | Rate limit per minute 每分钟的速率限制 |
 | timeout | [int32](#int32) |  | Timeout in milliseconds 超时控制（毫秒） |
+| concurrent | [int32](#int32) |  | Concurrent 并发控制 |
 
 
 

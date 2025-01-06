@@ -8,7 +8,8 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"gvisor.dev/gvisor/pkg/sync"
+
+	"sync"
 )
 
 type overrideStream struct {
@@ -22,43 +23,32 @@ func (s overrideStream) Context() context.Context {
 
 // APIAuthInterceptor is the rate_limit and timeout interceptor for gRPC server.
 type APIRateLimitInterceptor struct {
-	methoder map[string]*v1pb.MethodExtend
-
-	limiter sync.Map
 }
+
+var limiterPool sync.Map
 
 // New creates a new APIRateLimitInterceptor.
 func New(methoder map[string]*v1pb.MethodExtend) *APIRateLimitInterceptor {
-	return &APIRateLimitInterceptor{
-		methoder: methoder,
+	for k, v := range methoder {
+		if v.Rpm > 0 {
+			limiter := rate.NewLimiter(rate.Limit(v.Rpm*1.0/60.0), int(v.Rpm))
+			limiterPool.Store(k, limiter)
+		}
 	}
+
+	return &APIRateLimitInterceptor{}
 }
 
 // RateLimitInterceptor is the unary interceptor for gRPC API.
 func (in *APIRateLimitInterceptor) RateLimitInterceptor(ctx context.Context, request any, serverInfo *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
 	fullName := serverInfo.FullMethod
 
-	extend, ok := in.methoder[fullName]
-	if !ok {
-		return nil, status.Errorf(codes.ResourceExhausted, "method %s is not found rate limit exceeded", fullName)
-	}
-
-	if extend.Rpm <= 0 {
-		return handler(ctx, request)
-	}
-
-	limiterAny, ok := in.limiter.Load(fullName)
-	if !ok {
-		ratePerSecond := rate.Limit(extend.Rpm) / 60
-		burst := extend.Rpm / 60
-		limiter := rate.NewLimiter(ratePerSecond, int(burst))
-		in.limiter.Store(fullName, limiter)
-		return handler(ctx, request)
-	}
-
-	limiter := limiterAny.(*rate.Limiter)
-	if !limiter.Allow() {
-		return nil, status.Errorf(codes.ResourceExhausted, "method %s rate limit exceeded", fullName)
+	limiterAny, ok := limiterPool.Load(fullName)
+	if ok { // 如果存在限流器，则进行限流
+		limiter := limiterAny.(*rate.Limiter)
+		if !limiter.Allow() {
+			return nil, status.Errorf(codes.ResourceExhausted, "rate limit exceeded")
+		}
 	}
 
 	return handler(ctx, request)
@@ -68,29 +58,15 @@ func (in *APIRateLimitInterceptor) RateLimitStreamInterceptor(request any, ss gr
 	ctx := ss.Context()
 	fullName := serverInfo.FullMethod
 
-	extend, ok := in.methoder[fullName]
-	if !ok {
-		return status.Errorf(codes.ResourceExhausted, "method %s is not found rate limit exceeded", fullName)
-	}
-
 	sss := overrideStream{ServerStream: ss, childCtx: ctx}
 
-	if extend.Rpm <= 0 {
+	limiterAny, ok := limiterPool.Load(fullName)
+	if ok {
+		limiter := limiterAny.(*rate.Limiter)
+		if !limiter.Allow() {
+			return status.Errorf(codes.ResourceExhausted, "rate limit exceeded")
+		}
 		return handler(ctx, sss)
-	}
-
-	limiterAny, ok := in.limiter.Load(fullName)
-	if !ok {
-		ratePerSecond := rate.Limit(extend.Rpm) / 60
-		burst := extend.Rpm / 60
-		limiter := rate.NewLimiter(ratePerSecond, int(burst))
-		in.limiter.Store(fullName, limiter)
-		return handler(ctx, sss)
-	}
-
-	limiter := limiterAny.(*rate.Limiter)
-	if !limiter.Allow() {
-		return status.Errorf(codes.ResourceExhausted, "method %s rate limit exceeded", fullName)
 	}
 
 	return handler(ctx, sss)
