@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"time"
@@ -11,7 +12,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-func (s *Server) ConfigHttpRoutes(ctx context.Context) {
+func (s *Server) configHttpMiddleware(ctx context.Context) {
 	s.echoServer.Use(recoverMiddleware)
 
 	s.echoServer.Use(middleware.RequestLoggerWithConfig(middleware.RequestLoggerConfig{
@@ -34,7 +35,6 @@ func (s *Server) ConfigHttpRoutes(ctx context.Context) {
 		// Skip grpc and webhook calls.
 		return false
 	}
-
 	s.echoServer.Use(middleware.TimeoutWithConfig(middleware.TimeoutConfig{
 		Skipper: grpcSkipper,
 		Timeout: 0, // unlimited
@@ -45,6 +45,7 @@ func (s *Server) ConfigHttpRoutes(ctx context.Context) {
 			middleware.RateLimiterMemoryStoreConfig{Rate: 30, Burst: 60, ExpiresIn: 3 * time.Minute},
 		),
 		IdentifierExtractor: func(ctx echo.Context) (string, error) {
+			fmt.Println("echo: #### rate limiter identifier extractor")
 			id := ctx.RealIP()
 			return id, nil
 		},
@@ -55,8 +56,6 @@ func (s *Server) ConfigHttpRoutes(ctx context.Context) {
 			return context.JSON(http.StatusTooManyRequests, nil)
 		},
 	}))
-
-	s.echoServer.Any("/*", echo.WrapHandler(s.grpcMux))
 }
 
 func recoverMiddleware(next echo.HandlerFunc) echo.HandlerFunc {

@@ -9,6 +9,7 @@ require (
 	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.25.1
 	github.com/hashicorp/golang-lru/v2 v2.0.7
+	github.com/labstack/echo v3.3.10+incompatible
 	github.com/labstack/echo/v4 v4.13.3
 	github.com/pkg/errors v0.9.1
 	github.com/soheilhy/cmux v0.1.5

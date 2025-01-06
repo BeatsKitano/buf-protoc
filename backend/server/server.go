@@ -43,8 +43,7 @@ type Server struct {
 	grpcServer *grpc.Server
 	muxServer  cmux.CMux
 
-	grpcMux  *grpcruntime.ServeMux
-	grpcConn *grpc.ClientConn
+	grpcMux *grpcruntime.ServeMux
 
 	port int
 
@@ -150,29 +149,18 @@ func NewServer(port int, profile *config.Profile) *Server {
 		panic(err)
 	}
 
-	// REST gateway proxy.
-	grpcEndpoint := fmt.Sprintf(":%d", port)
-	grpcConn, err := grpc.Dial(
-		grpcEndpoint,
-		grpc.WithTransportCredentials(insecure.NewCredentials()),
-		grpc.WithDefaultCallOptions(
-			grpc.MaxCallRecvMsgSize(100*1024*1024), // Set MaxCallRecvMsgSize to 100M so that users can receive up to 100M via REST calls.
-		),
-	)
-	if err != nil {
-		panic(err)
-	}
-
 	// Register grpc-gateway mux with Echo
 	e.Any("/*", echo.WrapHandler(mux))
 
-	return &Server{
-		echoServer: e,
-		grpcServer: grpcServer,
-		muxServer:  m,
-		grpcMux:    mux,
-		grpcConn:   grpcConn,
-	}
+	server.echoServer = e
+	server.grpcServer = grpcServer
+	server.muxServer = m
+	server.grpcMux = mux
+	server.port = port
+
+	server.configHttpMiddleware(ctx)
+
+	return server
 }
 
 func (s *Server) Run() {
