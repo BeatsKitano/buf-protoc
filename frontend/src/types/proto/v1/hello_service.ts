@@ -26,6 +26,7 @@ export interface Req {
   name: string;
 }
 
+/** 返回参数。用户信息 */
 export interface User {
   /**
    * The name of the user.

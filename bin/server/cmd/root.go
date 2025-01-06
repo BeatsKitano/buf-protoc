@@ -1,8 +1,8 @@
 package cmd
 
 import (
+	"buf-protoc/backend/server"
 	"buf-protoc/component/config"
-	"buf-protoc/server"
 	"context"
 	"fmt"
 	"log/slog"

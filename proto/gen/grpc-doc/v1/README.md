@@ -130,7 +130,7 @@
 <a name="api-v1-User"></a>
 
 ### User
-
+返回参数。用户信息
 
 
 | Field | Type | Label | Description |

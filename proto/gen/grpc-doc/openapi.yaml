@@ -72,9 +72,7 @@ components:
                          The name of the branch.
                          Format: projects/{project}/branches/{branch}
                          {branch} should be the id of a sheet.
-            description: |-
-                *
-                 请求参数
+            description: 请求参数
         Status:
             type: object
             properties:
@@ -100,5 +98,6 @@ components:
                     description: |-
                         The name of the user.
                          Format: users/{user}. {user} is a system-generated unique ID.
+            description: 返回参数。用户信息
 tags:
     - name: HelloService

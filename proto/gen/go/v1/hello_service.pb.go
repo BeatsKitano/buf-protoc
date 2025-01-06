@@ -24,7 +24,6 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// *
 // 请求参数
 type Req struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
@@ -101,6 +100,7 @@ func (x *Req) GetName() string {
 	return ""
 }
 
+// 返回参数。用户信息
 type User struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// The name of the user.

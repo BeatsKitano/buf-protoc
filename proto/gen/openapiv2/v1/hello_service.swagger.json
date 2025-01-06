@@ -76,7 +76,7 @@
           "format": "date-time"
         }
       },
-      "title": "*\n请求参数"
+      "title": "请求参数"
     },
     "protobufAny": {
       "type": "object",
@@ -114,7 +114,8 @@
           "description": "The name of the user.\nFormat: users/{user}. {user} is a system-generated unique ID.",
           "readOnly": true
         }
-      }
+      },
+      "title": "返回参数。用户信息"
     }
   }
 }

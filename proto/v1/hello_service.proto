@@ -34,9 +34,7 @@ service HelloService {
 } 
 
 
-/**
- * 请求参数
- */
+// 请求参数
  message Req {    
   // 年龄
   // 3. 年龄限制
@@ -63,10 +61,11 @@ service HelloService {
   string name = 10 [(google.api.field_behavior) = REQUIRED];
 }
 
+// 返回参数。用户信息
 message User {
-reserved 6;
+  reserved 6;
 
-// The name of the user.
-// Format: users/{user}. {user} is a system-generated unique ID.
-string name = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // The name of the user.
+  // Format: users/{user}. {user} is a system-generated unique ID.
+  string name = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
 }
