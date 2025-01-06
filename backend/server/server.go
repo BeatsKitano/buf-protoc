@@ -6,10 +6,13 @@ import (
 	"log/slog"
 	"net"
 	"net/http"
-	"strconv"
+	"sync"
 	"time"
 
 	"buf-protoc/api/auth"
+	"buf-protoc/api/ratelimit"
+	"buf-protoc/api/timeout"
+
 	"buf-protoc/component/state"
 
 	"buf-protoc/component/config"
@@ -36,56 +39,84 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 )
 
+// SafeMap 是一个泛型的 sync.Map 包装
+type SafeMap[K comparable, V *v1pb.MethodExtend] struct {
+	m sync.Map
+}
+
+// Store 将键值对存储到 map 中
+func (gm *SafeMap[K, V]) Store(key K, value *v1pb.MethodExtend) {
+	gm.m.Store(key, value)
+}
+
+// Load 从 map 中获取指定键的值
+func (gm *SafeMap[K, V]) Load(key K) (*v1pb.MethodExtend, bool) {
+	value, ok := gm.m.Load(key)
+	if !ok {
+		var zero V
+		return zero, false
+	}
+	return value.(V), true
+}
+
+// Delete 从 map 中删除指定键值对
+func (gm *SafeMap[K, V]) Delete(key K) {
+	gm.m.Delete(key)
+}
+
+// Range 遍历 map 中的所有键值对
+func (gm *SafeMap[K, V]) Range(f func(key K, value *v1pb.MethodExtend) bool) {
+	gm.m.Range(func(key, value any) bool {
+		return f(key.(K), value.(V))
+	})
+}
+
 type Server struct {
 	v1pb.UnimplementedHelloServiceServer
 
-	echoServer *echo.Echo
-	grpcServer *grpc.Server
-	muxServer  cmux.CMux
+	port string
 
-	grpcMux *grpcruntime.ServeMux
-
-	port int
+	echoServer     *echo.Echo
+	grpcServer     *grpc.Server
+	grpcGatewayMux *grpcruntime.ServeMux
+	muxServer      cmux.CMux
 
 	cancel context.CancelFunc
+
+	// 静态解析所有的proto文件，获取所有的服务和方法
+	// key: "/"+service.FullName + "/"+ + method.Name
+	methodExtends map[string]*v1pb.MethodExtend
 }
 
-func NewServer(port int, profile *config.Profile) *Server {
-	protoregistry.GlobalFiles.RangeFiles(func(fd protoreflect.FileDescriptor) bool {
+func NewServer(port string, profile *config.Profile) *Server {
+	server := &Server{
+		methodExtends: make(map[string]*v1pb.MethodExtend, 0),
+	}
 
+	protoregistry.GlobalFiles.RangeFiles(func(fd protoreflect.FileDescriptor) bool {
 		services := fd.Services()
 		for i := 0; i < services.Len(); i++ {
 			service := services.Get(i)
-			if serviceHandler, _ := proto.GetExtension(service.Options(), v1pb.E_ServiceExtend).(*v1pb.ServiceExtend); serviceHandler != nil {
-				fmt.Println("servicename:" + string(service.FullName()))
-				fmt.Println("serviceSignature:" + serviceHandler.ServiceSignature)
-				fmt.Println("permission:" + serviceHandler.Permission)
-				fmt.Println("authmethod:" + serviceHandler.AuthMethod.String())
-				fmt.Println("audit:" + strconv.FormatBool(serviceHandler.Audit))
-			}
 
+			sn := service.FullName()
 			methods := service.Methods()
 			for k := 0; k < methods.Len(); k++ {
 				method := methods.Get(k)
-				if methodHandler, _ := proto.GetExtension(method.Options(), v1pb.E_MethodExtend).(*v1pb.MethodExtend); methodHandler != nil {
-					fmt.Println("methodname:" + string(method.Name()))
-					fmt.Println("methodSignature:" + methodHandler.MethodSignature)
-					fmt.Println("permission:" + methodHandler.Permission)
-					fmt.Println("authmethod:" + methodHandler.AuthMethod.String())
-					fmt.Println("audit:" + strconv.FormatBool(methodHandler.Audit))
+				if methodExtend, ok := proto.GetExtension(method.Options(), v1pb.E_MethodExtend).(*v1pb.MethodExtend); ok && methodExtend != nil {
+					key := fmt.Sprintf("/%s/%s", sn, method.Name())
+					server.methodExtends[key] = methodExtend
 				}
 			}
-
 		}
 
 		return true
 	})
 
-	server := &Server{}
-	if port < 80 {
-		port = 36789
+	for k, v := range server.methodExtends {
+		fmt.Println(k, v)
 	}
-	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
+
+	lis, err := net.Listen("tcp", port)
 	if err != nil {
 		fmt.Printf("failed to listen: %v\n", err)
 		panic(err)
@@ -99,11 +130,16 @@ func NewServer(port int, profile *config.Profile) *Server {
 		panic(err)
 	}
 
-	authProvider := auth.New("", state, profile)
+	authProvider := auth.New(server.methodExtends, "", state, profile)
+	ratelimitProvider := ratelimit.New(server.methodExtends)
+	timeoutProvider := timeout.New(server.methodExtends)
 
 	grpcServer := grpc.NewServer(
-		grpc.ChainUnaryInterceptor(authProvider.AuthenticationInterceptor),
-		// Override the maximum receiving message size to 100M for uploading large sheets.
+		grpc.ChainUnaryInterceptor(
+			authProvider.AuthenticationInterceptor,
+			ratelimitProvider.RateLimitInterceptor,
+			timeoutProvider.TimeoutInterceptor,
+		),
 		grpc.MaxRecvMsgSize(100*1024*1024),
 		grpc.InitialWindowSize(100000000),
 		grpc.InitialConnWindowSize(100000000),
@@ -118,16 +154,15 @@ func NewServer(port int, profile *config.Profile) *Server {
 
 	// Create Echo instance.
 	e := echo.New()
+	e.HideBanner = true
+	e.HidePort = false
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 
 	// Create HTTP server using grpc-gateway.
-	ctx := context.Background()
-
-	//  gatewayModifier := auth.GatewayResponseModifier{Store: s.store}
-
+	// gatewayModifier := auth.GatewayResponseModifier{Store: s.store}
 	opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
-	mux := grpcruntime.NewServeMux(
+	grpcGatewayMux := grpcruntime.NewServeMux(
 		grpcruntime.WithRoutingErrorHandler(func(ctx context.Context, sm *grpcruntime.ServeMux, m grpcruntime.Marshaler, w http.ResponseWriter, r *http.Request, httpStatus int) {
 			if httpStatus != http.StatusNotFound {
 				grpcruntime.DefaultRoutingErrorHandler(ctx, sm, m, w, r, httpStatus)
@@ -143,22 +178,21 @@ func NewServer(port int, profile *config.Profile) *Server {
 		}),
 	)
 
-	err = v1pb.RegisterHelloServiceHandlerFromEndpoint(ctx, mux, fmt.Sprintf(":%d", port), opts)
+	ctx := context.Background()
+	err = v1pb.RegisterHelloServiceHandlerFromEndpoint(ctx, grpcGatewayMux, port, opts)
 	if err != nil {
 		fmt.Printf("failed to register handler: %v\n", err)
 		panic(err)
 	}
 
 	// Register grpc-gateway mux with Echo
-	e.Any("/*", echo.WrapHandler(mux))
+	e.Any("/*", echo.WrapHandler(grpcGatewayMux))
 
 	server.echoServer = e
 	server.grpcServer = grpcServer
 	server.muxServer = m
-	server.grpcMux = mux
+	server.grpcGatewayMux = grpcGatewayMux
 	server.port = port
-
-	server.configHttpMiddleware(ctx)
 
 	return server
 }
@@ -241,6 +275,7 @@ func (s *Server) Shutdown(ctx context.Context) error {
 }
 
 func (s *Server) GetUser(ctx context.Context, req *v1pb.Req) (*v1pb.User, error) {
+	time.Sleep(2 * time.Second)
 	if err := protovalidate.Validate(req); err != nil {
 		fmt.Println("error:\n", err)
 		return nil, status.Error(codes.InvalidArgument, err.Error())

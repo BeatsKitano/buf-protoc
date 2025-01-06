@@ -14,10 +14,6 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/proto"
-	"google.golang.org/protobuf/reflect/protoreflect"
-	"google.golang.org/protobuf/reflect/protoregistry"
-	"google.golang.org/protobuf/types/descriptorpb"
 
 	"github.com/golang-jwt/jwt/v5"
 	errs "github.com/pkg/errors"
@@ -56,6 +52,7 @@ const (
 
 // APIAuthInterceptor is the auth interceptor for gRPC server.
 type APIAuthInterceptor struct {
+	methoder map[string]*v1pb.MethodExtend
 	secret   string
 	stateCfg *state.State
 	profile  *config.Profile
@@ -63,11 +60,13 @@ type APIAuthInterceptor struct {
 
 // New returns a new API auth interceptor.
 func New(
+	methoder map[string]*v1pb.MethodExtend,
 	secret string,
 	stateCfg *state.State,
 	profile *config.Profile,
 ) *APIAuthInterceptor {
 	return &APIAuthInterceptor{
+		methoder: methoder,
 		secret:   secret,
 		stateCfg: stateCfg,
 		profile:  profile,
@@ -85,7 +84,7 @@ func (in *APIAuthInterceptor) AuthenticationInterceptor(ctx context.Context, req
 		return nil, status.Error(codes.Unauthenticated, err.Error())
 	}
 
-	authContext, err := getAuthContext(serverInfo.FullMethod)
+	authContext, err := in.getAuthContext(serverInfo.FullMethod)
 	if err != nil {
 		return nil, err
 	}
@@ -115,7 +114,7 @@ func (in *APIAuthInterceptor) AuthenticationStreamInterceptor(request any, ss gr
 		return status.Error(codes.Unauthenticated, err.Error())
 	}
 
-	authContext, err := getAuthContext(serverInfo.FullMethod)
+	authContext, err := in.getAuthContext(serverInfo.FullMethod)
 	if err != nil {
 		return err
 	}
@@ -313,82 +312,27 @@ func generateToken(userName string, userID int, aud string, expirationTime time.
 	return tokenString, nil
 }
 
-func getAuthContext(fullMethod string) (*common.AuthContext, error) {
-	fmt.Println("fullMethod:", fullMethod)
-	methodTokens := strings.Split(fullMethod, "/")
-	if len(methodTokens) != 3 {
-		return nil, errs.Errorf("invalid full method name %q", fullMethod)
-	}
+func (in *APIAuthInterceptor) getAuthContext(fullMethod string) (*common.AuthContext, error) {
+	if extend, ok := in.methoder[fullMethod]; ok {
+		am := extend.AuthMethod
+		var authMethod common.AuthMethod
 
-	fmt.Println("methodTokens:", methodTokens)
-
-	protoregistry.GlobalFiles.RangeFiles(func(fd protoreflect.FileDescriptor) bool {
-		if strings.HasPrefix(string(fd.FullName()), "api") {
-			services := fd.Services()
-			for i := 0; i < services.Len(); i++ {
-				sd := services.Get(i)
-
-				sdFullname := string(sd.FullName())
-
-				if strings.HasPrefix(sdFullname, "api") {
-					methods := sd.Methods()
-
-					for k := 0; k < methods.Len(); k++ {
-						md := methods.Get(k)
-
-						fmt.Println("\tmd.name:", md.FullName())
-
-						options := md.Options().(*descriptorpb.MethodOptions)
-
-						fmt.Println("\t\toptions:", options)
-
-						me, ok := proto.GetExtension(options, v1pb.E_MethodExtend).(*v1pb.MethodExtend)
-						if !ok {
-							return false
-						}
-
-						fmt.Println("\t\t\tme:", me)
-					}
-				}
-			}
+		switch am {
+		case v1pb.AuthMethod_AUTH_METHOD_UNSPECIFIED:
+			authMethod = common.AuthMethodUnspecified
+		case v1pb.AuthMethod_IAM:
+			authMethod = common.AuthMethodIAM
+		case v1pb.AuthMethod_CUSTOM:
+			authMethod = common.AuthMethodCustom
 		}
 
-		return true
-	})
-
-	rd, err := protoregistry.GlobalFiles.FindDescriptorByName(protoreflect.FullName(methodTokens[1]))
-	if err != nil {
-		return nil, errs.Wrapf(err, "invalid registry service descriptor, full method name %q", fullMethod)
+		return &common.AuthContext{
+			AllowWithoutCredential: extend.AllowWithoutCredential,
+			Permission:             extend.Permission,
+			AuthMethod:             authMethod,
+			Audit:                  extend.Audit,
+		}, nil
+	} else {
+		return nil, errs.Errorf("method %q not found in methoder", fullMethod)
 	}
-	sd, ok := rd.(protoreflect.ServiceDescriptor)
-	if !ok {
-		return nil, errs.Errorf("invalid service descriptor, full method name %q", fullMethod)
-	}
-	md, ok := sd.Methods().ByName(protoreflect.Name(methodTokens[2])).Options().(*descriptorpb.MethodOptions)
-	if !ok {
-		return nil, errs.Errorf("invalid method options, full method name %q", fullMethod)
-	}
-
-	me, ok := proto.GetExtension(md, v1pb.E_MethodExtend).(*v1pb.MethodExtend)
-	if !ok {
-		return nil, errs.Errorf("invalid method extension, full method name %q", fullMethod)
-	}
-
-	am := me.AuthMethod
-	var authMethod common.AuthMethod
-	switch am {
-	case v1pb.AuthMethod_AUTH_METHOD_UNSPECIFIED:
-		authMethod = common.AuthMethodUnspecified
-	case v1pb.AuthMethod_IAM:
-		authMethod = common.AuthMethodIAM
-	case v1pb.AuthMethod_CUSTOM:
-		authMethod = common.AuthMethodCustom
-	}
-
-	return &common.AuthContext{
-		AllowWithoutCredential: me.AllowWithoutCredential,
-		Permission:             me.Permission,
-		AuthMethod:             authMethod,
-		Audit:                  me.Audit,
-	}, nil
 }

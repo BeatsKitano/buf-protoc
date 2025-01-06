@@ -12,12 +12,6 @@ import "buf/validate/validate.proto";
 import "v1/annotation.proto";
 
 service HelloService {
-  // 1. 服务级别的注解
-  option (api.v1.service_extend) = {
-    audit : true,
-  };
- 
-  
   rpc GetUser(Req) returns (User) {
     option (google.api.http) = {
       post: "/v1/{name=users/*}", 
@@ -29,6 +23,8 @@ service HelloService {
       audit: true,
       permission: "hg.settings.set",
       allow_without_credential: true,
+      rpm: 10,
+      timeout: 1000
     };
   }
 } 

@@ -45,40 +45,6 @@ export function authMethodToJSON(object: AuthMethod): string {
   }
 }
 
-export interface ServiceExtend {
-  serviceSignature: string;
-  /**
-   * Whether to allow access without credentials
-   * 是否允许无凭证访问
-   */
-  allowWithoutCredential: boolean;
-  /**
-   * Permission required to access the method
-   * 访问该方法所需的权限
-   */
-  permission: string;
-  /**
-   * Authorization method
-   * 授权方法
-   */
-  authMethod: AuthMethod;
-  /**
-   * Whether to audit the method
-   * 是否审计该方法
-   */
-  audit: boolean;
-  /**
-   * Rate limit per minute
-   * 每分钟的速率限制
-   */
-  rateLimit: number;
-  /**
-   * Timeout in milliseconds
-   * 超时控制（毫秒）
-   */
-  timeout: number;
-}
-
 export interface MethodExtend {
   /**
    * Method signature
@@ -109,172 +75,13 @@ export interface MethodExtend {
    * Rate limit per minute
    * 每分钟的速率限制
    */
-  rateLimit: number;
+  rpm: number;
   /**
    * Timeout in milliseconds
    * 超时控制（毫秒）
    */
   timeout: number;
 }
-
-function createBaseServiceExtend(): ServiceExtend {
-  return {
-    serviceSignature: "",
-    allowWithoutCredential: false,
-    permission: "",
-    authMethod: 0,
-    audit: false,
-    rateLimit: 0,
-    timeout: 0,
-  };
-}
-
-export const ServiceExtend = {
-  encode(message: ServiceExtend, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    if (message.serviceSignature !== "") {
-      writer.uint32(10).string(message.serviceSignature);
-    }
-    if (message.allowWithoutCredential === true) {
-      writer.uint32(16).bool(message.allowWithoutCredential);
-    }
-    if (message.permission !== "") {
-      writer.uint32(26).string(message.permission);
-    }
-    if (message.authMethod !== 0) {
-      writer.uint32(32).int32(message.authMethod);
-    }
-    if (message.audit === true) {
-      writer.uint32(40).bool(message.audit);
-    }
-    if (message.rateLimit !== 0) {
-      writer.uint32(80).int32(message.rateLimit);
-    }
-    if (message.timeout !== 0) {
-      writer.uint32(88).int32(message.timeout);
-    }
-    return writer;
-  },
-
-  decode(input: _m0.Reader | Uint8Array, length?: number): ServiceExtend {
-    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
-    let end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseServiceExtend();
-    while (reader.pos < end) {
-      const tag = reader.uint32();
-      switch (tag >>> 3) {
-        case 1:
-          if (tag !== 10) {
-            break;
-          }
-
-          message.serviceSignature = reader.string();
-          continue;
-        case 2:
-          if (tag !== 16) {
-            break;
-          }
-
-          message.allowWithoutCredential = reader.bool();
-          continue;
-        case 3:
-          if (tag !== 26) {
-            break;
-          }
-
-          message.permission = reader.string();
-          continue;
-        case 4:
-          if (tag !== 32) {
-            break;
-          }
-
-          message.authMethod = reader.int32() as any;
-          continue;
-        case 5:
-          if (tag !== 40) {
-            break;
-          }
-
-          message.audit = reader.bool();
-          continue;
-        case 10:
-          if (tag !== 80) {
-            break;
-          }
-
-          message.rateLimit = reader.int32();
-          continue;
-        case 11:
-          if (tag !== 88) {
-            break;
-          }
-
-          message.timeout = reader.int32();
-          continue;
-      }
-      if ((tag & 7) === 4 || tag === 0) {
-        break;
-      }
-      reader.skipType(tag & 7);
-    }
-    return message;
-  },
-
-  fromJSON(object: any): ServiceExtend {
-    return {
-      serviceSignature: isSet(object.serviceSignature) ? globalThis.String(object.serviceSignature) : "",
-      allowWithoutCredential: isSet(object.allowWithoutCredential)
-        ? globalThis.Boolean(object.allowWithoutCredential)
-        : false,
-      permission: isSet(object.permission) ? globalThis.String(object.permission) : "",
-      authMethod: isSet(object.authMethod) ? authMethodFromJSON(object.authMethod) : 0,
-      audit: isSet(object.audit) ? globalThis.Boolean(object.audit) : false,
-      rateLimit: isSet(object.rateLimit) ? globalThis.Number(object.rateLimit) : 0,
-      timeout: isSet(object.timeout) ? globalThis.Number(object.timeout) : 0,
-    };
-  },
-
-  toJSON(message: ServiceExtend): unknown {
-    const obj: any = {};
-    if (message.serviceSignature !== "") {
-      obj.serviceSignature = message.serviceSignature;
-    }
-    if (message.allowWithoutCredential === true) {
-      obj.allowWithoutCredential = message.allowWithoutCredential;
-    }
-    if (message.permission !== "") {
-      obj.permission = message.permission;
-    }
-    if (message.authMethod !== 0) {
-      obj.authMethod = authMethodToJSON(message.authMethod);
-    }
-    if (message.audit === true) {
-      obj.audit = message.audit;
-    }
-    if (message.rateLimit !== 0) {
-      obj.rateLimit = Math.round(message.rateLimit);
-    }
-    if (message.timeout !== 0) {
-      obj.timeout = Math.round(message.timeout);
-    }
-    return obj;
-  },
-
-  create(base?: DeepPartial<ServiceExtend>): ServiceExtend {
-    return ServiceExtend.fromPartial(base ?? {});
-  },
-  fromPartial(object: DeepPartial<ServiceExtend>): ServiceExtend {
-    const message = createBaseServiceExtend();
-    message.serviceSignature = object.serviceSignature ?? "";
-    message.allowWithoutCredential = object.allowWithoutCredential ?? false;
-    message.permission = object.permission ?? "";
-    message.authMethod = object.authMethod ?? 0;
-    message.audit = object.audit ?? false;
-    message.rateLimit = object.rateLimit ?? 0;
-    message.timeout = object.timeout ?? 0;
-    return message;
-  },
-};
 
 function createBaseMethodExtend(): MethodExtend {
   return {
@@ -283,7 +90,7 @@ function createBaseMethodExtend(): MethodExtend {
     permission: "",
     authMethod: 0,
     audit: false,
-    rateLimit: 0,
+    rpm: 0,
     timeout: 0,
   };
 }
@@ -305,8 +112,8 @@ export const MethodExtend = {
     if (message.audit === true) {
       writer.uint32(40).bool(message.audit);
     }
-    if (message.rateLimit !== 0) {
-      writer.uint32(80).int32(message.rateLimit);
+    if (message.rpm !== 0) {
+      writer.uint32(80).int32(message.rpm);
     }
     if (message.timeout !== 0) {
       writer.uint32(88).int32(message.timeout);
@@ -361,7 +168,7 @@ export const MethodExtend = {
             break;
           }
 
-          message.rateLimit = reader.int32();
+          message.rpm = reader.int32();
           continue;
         case 11:
           if (tag !== 88) {
@@ -388,7 +195,7 @@ export const MethodExtend = {
       permission: isSet(object.permission) ? globalThis.String(object.permission) : "",
       authMethod: isSet(object.authMethod) ? authMethodFromJSON(object.authMethod) : 0,
       audit: isSet(object.audit) ? globalThis.Boolean(object.audit) : false,
-      rateLimit: isSet(object.rateLimit) ? globalThis.Number(object.rateLimit) : 0,
+      rpm: isSet(object.rpm) ? globalThis.Number(object.rpm) : 0,
       timeout: isSet(object.timeout) ? globalThis.Number(object.timeout) : 0,
     };
   },
@@ -410,8 +217,8 @@ export const MethodExtend = {
     if (message.audit === true) {
       obj.audit = message.audit;
     }
-    if (message.rateLimit !== 0) {
-      obj.rateLimit = Math.round(message.rateLimit);
+    if (message.rpm !== 0) {
+      obj.rpm = Math.round(message.rpm);
     }
     if (message.timeout !== 0) {
       obj.timeout = Math.round(message.timeout);
@@ -429,7 +236,7 @@ export const MethodExtend = {
     message.permission = object.permission ?? "";
     message.authMethod = object.authMethod ?? 0;
     message.audit = object.audit ?? false;
-    message.rateLimit = object.rateLimit ?? 0;
+    message.rpm = object.rpm ?? 0;
     message.timeout = object.timeout ?? 0;
     return message;
   },

@@ -211,7 +211,7 @@ export const HelloServiceDefinition = {
         _unknownFields: {
           508010: [
             new Uint8Array([
-              23,
+              28,
               16,
               1,
               26,
@@ -235,6 +235,11 @@ export const HelloServiceDefinition = {
               1,
               40,
               1,
+              80,
+              10,
+              88,
+              232,
+              7,
             ]),
           ],
           578365826: [

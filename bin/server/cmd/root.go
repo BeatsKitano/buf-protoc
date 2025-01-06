@@ -50,7 +50,7 @@ func Run() {
 		cancel()
 	}()
 
-	s = server.NewServer(36789, &config.Profile{})
+	s = server.NewServer(":36789", &config.Profile{})
 
 	fmt.Printf(greetingBanner, fmt.Sprintf("has started on port %d 🚀", 36789))
 

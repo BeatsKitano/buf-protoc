@@ -5,11 +5,9 @@
 
 - [v1/annotation.proto](#v1_annotation-proto)
     - [MethodExtend](#api-v1-MethodExtend)
-    - [ServiceExtend](#api-v1-ServiceExtend)
   
     - [AuthMethod](#api-v1-AuthMethod)
   
-    - [File-level Extensions](#v1_annotation-proto-extensions)
     - [File-level Extensions](#v1_annotation-proto-extensions)
   
 - [v1/hello_service.proto](#v1_hello_service-proto)
@@ -42,28 +40,7 @@
 | permission | [string](#string) |  | Permission required to access the method 访问该方法所需的权限 |
 | auth_method | [AuthMethod](#api-v1-AuthMethod) |  | Authorization method 授权方法 |
 | audit | [bool](#bool) |  | Whether to audit the method 是否审计该方法 |
-| rate_limit | [int32](#int32) |  | Rate limit per minute 每分钟的速率限制 |
-| timeout | [int32](#int32) |  | Timeout in milliseconds 超时控制（毫秒） |
-
-
-
-
-
-
-<a name="api-v1-ServiceExtend"></a>
-
-### ServiceExtend
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| service_signature | [string](#string) |  |  |
-| allow_without_credential | [bool](#bool) |  | Whether to allow access without credentials 是否允许无凭证访问 |
-| permission | [string](#string) |  | Permission required to access the method 访问该方法所需的权限 |
-| auth_method | [AuthMethod](#api-v1-AuthMethod) |  | Authorization method 授权方法 |
-| audit | [bool](#bool) |  | Whether to audit the method 是否审计该方法 |
-| rate_limit | [int32](#int32) |  | Rate limit per minute 每分钟的速率限制 |
+| rpm | [int32](#int32) |  | Rate limit per minute 每分钟的速率限制 |
 | timeout | [int32](#int32) |  | Timeout in milliseconds 超时控制（毫秒） |
 
 
@@ -94,7 +71,6 @@
 | Extension | Type | Base | Number | Description |
 | --------- | ---- | ---- | ------ | ----------- |
 | method_extend | MethodExtend | .google.protobuf.MethodOptions | 63501 |  |
-| service_extend | ServiceExtend | .google.protobuf.ServiceOptions | 63500 |  |
 
  
 
