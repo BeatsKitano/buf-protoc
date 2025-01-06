@@ -178,19 +178,19 @@
             <a href="#v1%2fannotation.proto">v1/annotation.proto</a>
             <ul>
               
+                <li>
+                  <a href="#api.v1.MethodExtend"><span class="badge">M</span>MethodExtend</a>
+                </li>
               
                 <li>
-                  <a href="#bytebase.v1.AuthMethod"><span class="badge">E</span>AuthMethod</a>
+                  <a href="#api.v1.ServiceExtend"><span class="badge">M</span>ServiceExtend</a>
                 </li>
               
               
                 <li>
-                  <a href="#v1%2fannotation.proto-extensions"><span class="badge">X</span>File-level Extensions</a>
+                  <a href="#api.v1.AuthMethod"><span class="badge">E</span>AuthMethod</a>
                 </li>
               
-                <li>
-                  <a href="#v1%2fannotation.proto-extensions"><span class="badge">X</span>File-level Extensions</a>
-                </li>
               
                 <li>
                   <a href="#v1%2fannotation.proto-extensions"><span class="badge">X</span>File-level Extensions</a>
@@ -239,9 +239,113 @@
       <p></p>
 
       
+        <h3 id="api.v1.MethodExtend">MethodExtend</h3>
+        <p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>method_signature</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>allow_without_credential</td>
+                  <td><a href="#bool">bool</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>permission</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>auth_method</td>
+                  <td><a href="#api.v1.AuthMethod">AuthMethod</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>audit</td>
+                  <td><a href="#bool">bool</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="api.v1.ServiceExtend">ServiceExtend</h3>
+        <p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>service_signature</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>allow_without_credential</td>
+                  <td><a href="#bool">bool</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>permission</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>auth_method</td>
+                  <td><a href="#api.v1.AuthMethod">AuthMethod</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>audit</td>
+                  <td><a href="#bool">bool</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
 
       
-        <h3 id="bytebase.v1.AuthMethod">AuthMethod</h3>
+        <h3 id="api.v1.AuthMethod">AuthMethod</h3>
         <p></p>
         <table class="enum-table">
           <thead>
@@ -280,34 +384,18 @@
           <tbody>
             
               <tr>
-                <td>allow_without_credential</td>
-                <td><a href="#bool">bool</a></td>
+                <td>method_extend</td>
+                <td><a href="#api.v1.MethodExtend">MethodExtend</a></td>
                 <td><a href="#google.protobuf.MethodOptions">.google.protobuf.MethodOptions</a></td>
-                <td>100000</td>
+                <td>63501</td>
                 <td><p></p></td>
               </tr>
             
               <tr>
-                <td>audit</td>
-                <td><a href="#bool">bool</a></td>
-                <td><a href="#google.protobuf.MethodOptions">.google.protobuf.MethodOptions</a></td>
-                <td>100003</td>
-                <td><p></p></td>
-              </tr>
-            
-              <tr>
-                <td>auth_method</td>
-                <td><a href="#bytebase.v1.AuthMethod">AuthMethod</a></td>
-                <td><a href="#google.protobuf.MethodOptions">.google.protobuf.MethodOptions</a></td>
-                <td>100002</td>
-                <td><p></p></td>
-              </tr>
-            
-              <tr>
-                <td>permission</td>
-                <td><a href="#string">string</a></td>
-                <td><a href="#google.protobuf.MethodOptions">.google.protobuf.MethodOptions</a></td>
-                <td>100001</td>
+                <td>service_extend</td>
+                <td><a href="#api.v1.ServiceExtend">ServiceExtend</a></td>
+                <td><a href="#google.protobuf.ServiceOptions">.google.protobuf.ServiceOptions</a></td>
+                <td>63500</td>
                 <td><p></p></td>
               </tr>
             

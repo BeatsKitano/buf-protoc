@@ -6,17 +6,15 @@ import (
 	"log/slog"
 	"net"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/bufbuild/protovalidate-go"
 
 	v1pb "buf-protoc/proto/gen/go/v1"
 
-	"google.golang.org/genproto/googleapis/api/annotations"
-
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/reflect/protoreflect"
-	"google.golang.org/protobuf/types/descriptorpb"
 
 	grpcruntime "github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"google.golang.org/grpc"
@@ -25,6 +23,8 @@ import (
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/reflection"
 	"google.golang.org/grpc/status"
+
+	"google.golang.org/protobuf/reflect/protoregistry"
 
 	"github.com/soheilhy/cmux"
 
@@ -48,6 +48,36 @@ type Server struct {
 }
 
 func NewServer(port int) *Server {
+	protoregistry.GlobalFiles.RangeFiles(func(fd protoreflect.FileDescriptor) bool {
+
+		services := fd.Services()
+		for i := 0; i < services.Len(); i++ {
+			service := services.Get(i)
+			if serviceHandler, _ := proto.GetExtension(service.Options(), v1pb.E_ServiceExtend).(*v1pb.ServiceExtend); serviceHandler != nil {
+				fmt.Println("servicename:" + string(service.FullName()))
+				fmt.Println("serviceSignature:" + serviceHandler.ServiceSignature)
+				fmt.Println("permission:" + serviceHandler.Permission)
+				fmt.Println("authmethod:" + serviceHandler.AuthMethod.String())
+				fmt.Println("audit:" + strconv.FormatBool(serviceHandler.Audit))
+			}
+
+			methods := service.Methods()
+			for k := 0; k < methods.Len(); k++ {
+				method := methods.Get(k)
+				if methodHandler, _ := proto.GetExtension(method.Options(), v1pb.E_MethodExtend).(*v1pb.MethodExtend); methodHandler != nil {
+					fmt.Println("methodname:" + string(method.Name()))
+					fmt.Println("methodSignature:" + methodHandler.MethodSignature)
+					fmt.Println("permission:" + methodHandler.Permission)
+					fmt.Println("authmethod:" + methodHandler.AuthMethod.String())
+					fmt.Println("audit:" + strconv.FormatBool(methodHandler.Audit))
+				}
+			}
+
+		}
+
+		return true
+	})
+
 	server := &Server{}
 	if port < 80 {
 		port = 36789
@@ -246,34 +276,4 @@ func (s *Server) GetUser(ctx context.Context, req *v1pb.Req) (*v1pb.User, error)
 	return &v1pb.User{
 		Name: "John Doe",
 	}, nil
-}
-
-// printMethodOptions 打印方法描述符中的所有选项
-func printMethodOptions(method protoreflect.MethodDescriptor) {
-	// 获取方法选项
-	options := method.Options().(*descriptorpb.MethodOptions)
-
-	// 打印 google.api.http 选项
-	if proto.HasExtension(options, annotations.E_Http) {
-		httpRule := proto.GetExtension(options, annotations.E_Http).(*annotations.HttpRule)
-		fmt.Printf("google.api.http: %v\n", httpRule)
-	}
-
-	// 打印 google.api.method_signature 选项
-	if proto.HasExtension(options, annotations.E_MethodSignature) {
-		methodSignature := proto.GetExtension(options, annotations.E_MethodSignature).([]string)
-		fmt.Printf("google.api.method_signature: %v\n", methodSignature)
-	}
-
-	// 打印 bytebase.v1.permission 选项
-	if proto.HasExtension(options, v1pb.E_Permission) {
-		permission := proto.GetExtension(options, v1pb.E_Permission).(string)
-		fmt.Printf("beats.v1.permission: %v\n", permission)
-	}
-
-	// 打印 bytebase.v1.auth_method 选项
-	if proto.HasExtension(options, v1pb.E_AuthMethod) {
-		authMethod := proto.GetExtension(options, v1pb.E_AuthMethod).(v1pb.AuthMethod)
-		fmt.Printf("beats.v1.auth_method: %v\n", authMethod)
-	}
 }

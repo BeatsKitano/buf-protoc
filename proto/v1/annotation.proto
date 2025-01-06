@@ -1,16 +1,17 @@
 syntax = "proto3";
 
-package bytebase.v1;
+package api.v1;
 
 import "google/protobuf/descriptor.proto";
 
 option go_package = "api/v1";
 
+extend google.protobuf.ServiceOptions {
+    optional ServiceExtend service_extend = 63500;
+}
+
 extend google.protobuf.MethodOptions {
-  bool allow_without_credential = 100000;
-  string permission = 100001;
-  AuthMethod auth_method = 100002;
-  bool audit = 100003;
+  optional MethodExtend method_extend = 63501;
 }
 
 enum AuthMethod {
@@ -19,4 +20,20 @@ enum AuthMethod {
   IAM = 1;
   // Custom authorization method.
   CUSTOM = 2;
+}
+
+message ServiceExtend {
+  string service_signature = 1;
+  bool allow_without_credential = 2;
+  string permission = 3;
+  AuthMethod auth_method = 4;
+  bool audit = 5;
+}
+
+message MethodExtend {
+  string method_signature = 1;
+  bool allow_without_credential = 2;
+  string permission = 3;
+  AuthMethod auth_method = 4;
+  bool audit = 5;
 }

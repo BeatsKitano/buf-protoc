@@ -9,19 +9,26 @@ import "google/api/field_behavior.proto";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/field_mask.proto";
 import "buf/validate/validate.proto";
-
 import "v1/annotation.proto";
 
 service HelloService {
+  // 1. 服务级别的注解
+  option (api.v1.service_extend) = {
+    audit : true,
+  };
  
+  
   rpc GetUser(Req) returns (User) {
     option (google.api.http) = {
       post: "/v1/{name=users/*}", 
       body: "*" 
+    }; 
+    // 2. 方法级别的注解
+    option (api.v1.method_extend) = {
+      auth_method : 1,
+      audit: true,
+      permission: "hg.settings.set",
     };
-    option (google.api.method_signature) = "hello,update_mask";
-    option (bytebase.v1.permission) = "hg.settings.set";
-    option (bytebase.v1.auth_method) = IAM;
   }
 } 
 

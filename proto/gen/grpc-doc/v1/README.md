@@ -4,10 +4,11 @@
 ## Table of Contents
 
 - [v1/annotation.proto](#v1_annotation-proto)
-    - [AuthMethod](#bytebase-v1-AuthMethod)
+    - [MethodExtend](#api-v1-MethodExtend)
+    - [ServiceExtend](#api-v1-ServiceExtend)
   
-    - [File-level Extensions](#v1_annotation-proto-extensions)
-    - [File-level Extensions](#v1_annotation-proto-extensions)
+    - [AuthMethod](#api-v1-AuthMethod)
+  
     - [File-level Extensions](#v1_annotation-proto-extensions)
     - [File-level Extensions](#v1_annotation-proto-extensions)
   
@@ -27,10 +28,48 @@
 ## v1/annotation.proto
 
 
+
+<a name="api-v1-MethodExtend"></a>
+
+### MethodExtend
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| method_signature | [string](#string) |  |  |
+| allow_without_credential | [bool](#bool) |  |  |
+| permission | [string](#string) |  |  |
+| auth_method | [AuthMethod](#api-v1-AuthMethod) |  |  |
+| audit | [bool](#bool) |  |  |
+
+
+
+
+
+
+<a name="api-v1-ServiceExtend"></a>
+
+### ServiceExtend
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| service_signature | [string](#string) |  |  |
+| allow_without_credential | [bool](#bool) |  |  |
+| permission | [string](#string) |  |  |
+| auth_method | [AuthMethod](#api-v1-AuthMethod) |  |  |
+| audit | [bool](#bool) |  |  |
+
+
+
+
+
  
 
 
-<a name="bytebase-v1-AuthMethod"></a>
+<a name="api-v1-AuthMethod"></a>
 
 ### AuthMethod
 
@@ -50,10 +89,8 @@
 ### File-level Extensions
 | Extension | Type | Base | Number | Description |
 | --------- | ---- | ---- | ------ | ----------- |
-| allow_without_credential | bool | .google.protobuf.MethodOptions | 100000 |  |
-| audit | bool | .google.protobuf.MethodOptions | 100003 |  |
-| auth_method | AuthMethod | .google.protobuf.MethodOptions | 100002 |  |
-| permission | string | .google.protobuf.MethodOptions | 100001 |  |
+| method_extend | MethodExtend | .google.protobuf.MethodOptions | 63501 |  |
+| service_extend | ServiceExtend | .google.protobuf.ServiceOptions | 63500 |  |
 
  
 
