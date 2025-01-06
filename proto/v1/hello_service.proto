@@ -28,6 +28,7 @@ service HelloService {
       auth_method : 1,
       audit: true,
       permission: "hg.settings.set",
+      allow_without_credential: true,
     };
   }
 } 

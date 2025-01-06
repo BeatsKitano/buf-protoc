@@ -9,6 +9,11 @@ import (
 	"strconv"
 	"time"
 
+	"buf-protoc/api/auth"
+	"buf-protoc/component/state"
+
+	"buf-protoc/component/config"
+
 	"github.com/bufbuild/protovalidate-go"
 
 	v1pb "buf-protoc/proto/gen/go/v1"
@@ -20,7 +25,6 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials/insecure"
-	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/reflection"
 	"google.golang.org/grpc/status"
 
@@ -47,7 +51,7 @@ type Server struct {
 	cancel context.CancelFunc
 }
 
-func NewServer(port int) *Server {
+func NewServer(port int, profile *config.Profile) *Server {
 	protoregistry.GlobalFiles.RangeFiles(func(fd protoreflect.FileDescriptor) bool {
 
 		services := fd.Services()
@@ -90,8 +94,16 @@ func NewServer(port int) *Server {
 
 	m := cmux.New(lis)
 
+	state, err := state.New()
+	if err != nil {
+		slog.Error("failed to create state", "error", err)
+		panic(err)
+	}
+
+	authProvider := auth.New("", state, profile)
+
 	grpcServer := grpc.NewServer(
-		grpc.ChainUnaryInterceptor(authInterceptor),
+		grpc.ChainUnaryInterceptor(authProvider.AuthenticationInterceptor),
 		// Override the maximum receiving message size to 100M for uploading large sheets.
 		grpc.MaxRecvMsgSize(100*1024*1024),
 		grpc.InitialWindowSize(100000000),
@@ -240,34 +252,7 @@ func (s *Server) Shutdown(ctx context.Context) error {
 	return nil
 }
 
-func authInterceptor(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
-
-	md, ok := metadata.FromIncomingContext(ctx)
-	if !ok {
-		return nil, status.Errorf(codes.Unauthenticated, "missing metadata")
-	}
-
-	for k, v := range md {
-		slog.Info("metadata", k, v)
-	}
-	// ... 验证 token 的逻辑 ...
-	// if !isValidToken(token) {
-	// 	return nil, status.Errorf(codes.Unauthenticated, "invalid token")
-	// }
-	// 验证通过，继续调用后续处理函数
-	return handler(ctx, req)
-}
-
 func (s *Server) GetUser(ctx context.Context, req *v1pb.Req) (*v1pb.User, error) {
-	// 从 metadata 中获取方法名
-	md, ok := metadata.FromIncomingContext(ctx)
-	if !ok {
-		return nil, status.Error(codes.InvalidArgument, "metadata not found")
-	}
-	for k, v := range md {
-		slog.Info("metadata", k, v)
-	}
-
 	if err := protovalidate.Validate(req); err != nil {
 		fmt.Println("error:\n", err)
 		return nil, status.Error(codes.InvalidArgument, err.Error())

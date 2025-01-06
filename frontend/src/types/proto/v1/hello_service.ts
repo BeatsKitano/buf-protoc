@@ -210,7 +210,9 @@ export const HelloServiceDefinition = {
         _unknownFields: {
           508010: [
             new Uint8Array([
-              21,
+              23,
+              16,
+              1,
               26,
               15,
               104,
