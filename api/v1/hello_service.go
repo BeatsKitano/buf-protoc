@@ -3,7 +3,6 @@ package v1
 import (
 	v1pb "buf-protoc/proto/gen/go/v1"
 	"context"
-	"fmt"
 )
 
 // HelloService implements the actuator service.
@@ -17,7 +16,6 @@ func NewHelloService() *HelloService {
 }
 
 func (s *HelloService) GetUser(ctx context.Context, req *v1pb.Req) (*v1pb.User, error) {
-	fmt.Println("GetUser")
 	return &v1pb.User{
 		Name: "John Doe",
 	}, nil

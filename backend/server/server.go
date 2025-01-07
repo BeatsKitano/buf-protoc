@@ -6,19 +6,20 @@ import (
 	"log/slog"
 	"net"
 	"net/http"
-	"sync"
 	"time"
 
-	"buf-protoc/api/auth"
-	"buf-protoc/api/ratelimit"
-	"buf-protoc/api/timeout"
-	"buf-protoc/api/validator"
+	"buf-protoc/backend/interceptor/auth"
+	"buf-protoc/backend/interceptor/ratelimit"
+	"buf-protoc/backend/interceptor/timeout"
+	"buf-protoc/backend/interceptor/validator"
 
 	"buf-protoc/component/state"
 
 	"buf-protoc/component/config"
 
 	v1pb "buf-protoc/proto/gen/go/v1"
+
+	apiv1 "buf-protoc/api/v1"
 
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/reflect/protoreflect"
@@ -37,38 +38,6 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
-
-// SafeMap 是一个泛型的 sync.Map 包装
-type SafeMap[K comparable, V *v1pb.MethodExtend] struct {
-	m sync.Map
-}
-
-// Store 将键值对存储到 map 中
-func (gm *SafeMap[K, V]) Store(key K, value *v1pb.MethodExtend) {
-	gm.m.Store(key, value)
-}
-
-// Load 从 map 中获取指定键的值
-func (gm *SafeMap[K, V]) Load(key K) (*v1pb.MethodExtend, bool) {
-	value, ok := gm.m.Load(key)
-	if !ok {
-		var zero V
-		return zero, false
-	}
-	return value.(V), true
-}
-
-// Delete 从 map 中删除指定键值对
-func (gm *SafeMap[K, V]) Delete(key K) {
-	gm.m.Delete(key)
-}
-
-// Range 遍历 map 中的所有键值对
-func (gm *SafeMap[K, V]) Range(f func(key K, value *v1pb.MethodExtend) bool) {
-	gm.m.Range(func(key, value any) bool {
-		return f(key.(K), value.(V))
-	})
-}
 
 type Server struct {
 	v1pb.UnimplementedHelloServiceServer
@@ -185,7 +154,7 @@ func NewServer(port string, profile *config.Profile) *Server {
 	}
 
 	// Register the gRPC server.
-	v1pb.RegisterHelloServiceServer(server.grpcServer, server)
+	v1pb.RegisterHelloServiceServer(server.grpcServer, apiv1.NewHelloService())
 
 	// Register grpc-gateway mux with Echo
 	server.echoServer.Any("/*", echo.WrapHandler(server.grpcGatewayMux))
@@ -194,7 +163,6 @@ func NewServer(port string, profile *config.Profile) *Server {
 }
 
 func (s *Server) Run() {
-
 	grpcL := s.muxServer.MatchWithWriters(cmux.HTTP2MatchHeaderFieldSendSettings("content-type", "application/grpc"))
 
 	// Match HTTP connections.
@@ -262,10 +230,4 @@ func (s *Server) Shutdown(ctx context.Context) error {
 	}
 
 	return nil
-}
-
-func (s *Server) GetUser(ctx context.Context, req *v1pb.Req) (*v1pb.User, error) {
-	return &v1pb.User{
-		Name: "John Doe",
-	}, nil
 }
