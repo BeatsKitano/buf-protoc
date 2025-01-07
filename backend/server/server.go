@@ -12,12 +12,11 @@ import (
 	"buf-protoc/api/auth"
 	"buf-protoc/api/ratelimit"
 	"buf-protoc/api/timeout"
+	"buf-protoc/api/validator"
 
 	"buf-protoc/component/state"
 
 	"buf-protoc/component/config"
-
-	"github.com/bufbuild/protovalidate-go"
 
 	v1pb "buf-protoc/proto/gen/go/v1"
 
@@ -141,6 +140,7 @@ func NewServer(port string, profile *config.Profile) *Server {
 			authProvider.UnaryServerInterceptor,
 			ratelimitProvider.UnaryServerInterceptor,
 			timeoutProvider.UnaryServerInterceptor,
+			validator.UnaryServerInterceptor(),
 		),
 		grpc.MaxRecvMsgSize(100*1024*1024),
 		grpc.InitialWindowSize(100000000),
@@ -265,20 +265,6 @@ func (s *Server) Shutdown(ctx context.Context) error {
 }
 
 func (s *Server) GetUser(ctx context.Context, req *v1pb.Req) (*v1pb.User, error) {
-	select {
-	case <-ctx.Done():
-		// 如果上下文已取消（超时），则返回超时错误
-		return nil, status.Errorf(codes.DeadlineExceeded, "request timed out !!!!")
-	default:
-	}
-
-	time.Sleep(2 * time.Second)
-
-	if err := protovalidate.Validate(req); err != nil {
-		fmt.Println(err)
-		return nil, status.Error(codes.InvalidArgument, err.Error())
-	}
-
 	return &v1pb.User{
 		Name: "John Doe",
 	}, nil

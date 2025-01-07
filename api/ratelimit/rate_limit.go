@@ -44,7 +44,7 @@ func (in *APIRateLimitInterceptor) UnaryServerInterceptor(ctx context.Context, r
 	fullName := serverInfo.FullMethod
 
 	limiterAny, ok := limiterPool.Load(fullName)
-	if ok { // 如果存在限流器，则进行限流
+	if ok { 
 		limiter := limiterAny.(*rate.Limiter)
 		if !limiter.Allow() {
 			return nil, status.Errorf(codes.ResourceExhausted, "rate limit exceeded")
