@@ -74,7 +74,7 @@ func New(
 }
 
 // AuthenticationInterceptor is the unary interceptor for gRPC API.
-func (in *APIAuthInterceptor) AuthenticationInterceptor(ctx context.Context, request any, serverInfo *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
+func (in *APIAuthInterceptor) UnaryServerInterceptor(ctx context.Context, request any, serverInfo *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
 		return nil, status.Errorf(codes.Unauthenticated, "failed to parse metadata from incoming context")
@@ -103,7 +103,7 @@ func (in *APIAuthInterceptor) AuthenticationInterceptor(ctx context.Context, req
 }
 
 // AuthenticationStreamInterceptor is the unary interceptor for gRPC API.
-func (in *APIAuthInterceptor) AuthenticationStreamInterceptor(request any, ss grpc.ServerStream, serverInfo *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
+func (in *APIAuthInterceptor) UnaryServerStreamInterceptor(request any, ss grpc.ServerStream, serverInfo *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 	ctx := ss.Context()
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {

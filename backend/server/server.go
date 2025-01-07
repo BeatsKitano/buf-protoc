@@ -138,9 +138,9 @@ func NewServer(port string, profile *config.Profile) *Server {
 	grpc.EnableTracing = true
 	server.grpcServer = grpc.NewServer(
 		grpc.ChainUnaryInterceptor(
-			authProvider.AuthenticationInterceptor,
-			ratelimitProvider.RateLimitInterceptor,
-			timeoutProvider.TimeoutInterceptor,
+			authProvider.UnaryServerInterceptor,
+			ratelimitProvider.UnaryServerInterceptor,
+			timeoutProvider.UnaryServerInterceptor,
 		),
 		grpc.MaxRecvMsgSize(100*1024*1024),
 		grpc.InitialWindowSize(100000000),
@@ -151,9 +151,6 @@ func NewServer(port string, profile *config.Profile) *Server {
 	// Register reflection service on gRPC server.
 	reflection.Register(server.grpcServer)
 
-	// Register the gRPC server.
-	v1pb.RegisterHelloServiceServer(server.grpcServer, server)
-
 	// Create Echo instance.
 	server.echoServer = echo.New()
 	server.echoServer.HideBanner = true
@@ -162,7 +159,6 @@ func NewServer(port string, profile *config.Profile) *Server {
 	server.echoServer.Use(middleware.Recover())
 
 	// Create HTTP server using grpc-gateway.
-	// gatewayModifier := auth.GatewayResponseModifier{Store: s.store}
 	server.grpcGatewayMux = grpcruntime.NewServeMux(
 		grpcruntime.WithRoutingErrorHandler(func(ctx context.Context, sm *grpcruntime.ServeMux, m grpcruntime.Marshaler, w http.ResponseWriter, r *http.Request, httpStatus int) {
 			if httpStatus != http.StatusNotFound {
@@ -179,12 +175,17 @@ func NewServer(port string, profile *config.Profile) *Server {
 		}),
 	)
 
-	ctx := context.Background()
+	ctx, cancel := context.WithCancel(context.Background())
+	server.cancel = cancel
+
 	err = v1pb.RegisterHelloServiceHandlerFromEndpoint(ctx, server.grpcGatewayMux, port, []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())})
 	if err != nil {
 		fmt.Printf("failed to register handler: %v\n", err)
 		panic(err)
 	}
+
+	// Register the gRPC server.
+	v1pb.RegisterHelloServiceServer(server.grpcServer, server)
 
 	// Register grpc-gateway mux with Echo
 	server.echoServer.Any("/*", echo.WrapHandler(server.grpcGatewayMux))
@@ -193,8 +194,6 @@ func NewServer(port string, profile *config.Profile) *Server {
 }
 
 func (s *Server) Run() {
-	_, cancel := context.WithCancel(context.Background())
-	s.cancel = cancel
 
 	grpcL := s.muxServer.MatchWithWriters(cmux.HTTP2MatchHeaderFieldSendSettings("content-type", "application/grpc"))
 
@@ -266,9 +265,17 @@ func (s *Server) Shutdown(ctx context.Context) error {
 }
 
 func (s *Server) GetUser(ctx context.Context, req *v1pb.Req) (*v1pb.User, error) {
+	select {
+	case <-ctx.Done():
+		// 如果上下文已取消（超时），则返回超时错误
+		return nil, status.Errorf(codes.DeadlineExceeded, "request timed out !!!!")
+	default:
+	}
+
 	time.Sleep(2 * time.Second)
+
 	if err := protovalidate.Validate(req); err != nil {
-		fmt.Println("error:\n", err)
+		fmt.Println(err)
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 

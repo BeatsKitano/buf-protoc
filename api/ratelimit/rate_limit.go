@@ -40,7 +40,7 @@ func New(methoder map[string]*v1pb.MethodExtend) *APIRateLimitInterceptor {
 }
 
 // RateLimitInterceptor is the unary interceptor for gRPC API.
-func (in *APIRateLimitInterceptor) RateLimitInterceptor(ctx context.Context, request any, serverInfo *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
+func (in *APIRateLimitInterceptor) UnaryServerInterceptor(ctx context.Context, request any, serverInfo *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
 	fullName := serverInfo.FullMethod
 
 	limiterAny, ok := limiterPool.Load(fullName)
@@ -54,7 +54,7 @@ func (in *APIRateLimitInterceptor) RateLimitInterceptor(ctx context.Context, req
 	return handler(ctx, request)
 }
 
-func (in *APIRateLimitInterceptor) RateLimitStreamInterceptor(request any, ss grpc.ServerStream, serverInfo *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
+func (in *APIRateLimitInterceptor) UnaryServerStreamInterceptor(request any, ss grpc.ServerStream, serverInfo *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 	ctx := ss.Context()
 	fullName := serverInfo.FullMethod
 

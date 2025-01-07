@@ -32,7 +32,7 @@ func New(methoder map[string]*v1pb.MethodExtend) *APITimeoutInterceptor {
 }
 
 // TimeoutInterceptor is the unary interceptor for gRPC API.
-func (in *APITimeoutInterceptor) TimeoutInterceptor(ctx context.Context, request any, serverInfo *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
+func (in *APITimeoutInterceptor) UnaryServerInterceptor(ctx context.Context, request any, serverInfo *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
 	fullName := serverInfo.FullMethod
 
 	extend, ok := in.methoder[fullName]
@@ -46,30 +46,30 @@ func (in *APITimeoutInterceptor) TimeoutInterceptor(ctx context.Context, request
 
 	timeoutCtx, cancel := context.WithTimeout(ctx, time.Duration(extend.Timeout)*time.Millisecond)
 	defer cancel()
-	ctx = timeoutCtx
 
 	// 创建一个 channel 用于接收处理结果
-	done := make(chan struct{})
-	var res interface{}
-	var err error
-
+	resChan := make(chan interface{})
+	errChan := make(chan error)
 	go func() {
-		res, err = handler(ctx, request)
-		close(done)
+		res, err := handler(timeoutCtx, request)
+		if err != nil {
+			errChan <- err
+		} else {
+			resChan <- res
+		}
 	}()
 
-	// 等待处理结果或超时
 	select {
-	case <-ctx.Done():
-		// 如果上下文已取消（超时），则返回超时错误
+	case <-timeoutCtx.Done():
 		return nil, status.Errorf(codes.DeadlineExceeded, "request timed out")
-	case <-done:
-		// 如果处理完成，则返回处理结果
-		return res, err
+	case res := <-resChan:
+		return res, nil
+	case err := <-errChan:
+		return nil, err
 	}
 }
 
-func (in *APITimeoutInterceptor) TimeoutStreamInterceptor(request any, ss grpc.ServerStream, serverInfo *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
+func (in *APITimeoutInterceptor) UnaryServerStreamInterceptor(request any, ss grpc.ServerStream, serverInfo *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 	ctx := ss.Context()
 	fullName := serverInfo.FullMethod
 
@@ -85,24 +85,18 @@ func (in *APITimeoutInterceptor) TimeoutStreamInterceptor(request any, ss grpc.S
 
 	timeoutCtx, cancel := context.WithTimeout(ctx, time.Duration(extend.Timeout)*time.Millisecond)
 	defer cancel()
-	ctx = timeoutCtx
 
 	// 创建一个 channel 用于接收处理结果
-	done := make(chan struct{})
-	var err error
-
+	errChan := make(chan error)
 	go func() {
-		err = handler(ctx, sss)
-		close(done)
+		err := handler(timeoutCtx, sss)
+		errChan <- err
 	}()
 
-	// 等待处理结果或超时
 	select {
-	case <-ctx.Done():
-		// 如果上下文已取消（超时），则返回超时错误
+	case <-timeoutCtx.Done():
 		return status.Errorf(codes.DeadlineExceeded, "request timed out")
-	case <-done:
-		// 如果处理完成，则返回处理结果
+	case err := <-errChan:
 		return err
 	}
 }
