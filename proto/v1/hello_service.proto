@@ -2,16 +2,25 @@ syntax = "proto3";
 
 package api.v1;
 option go_package = "api/v1";
+ 
+import "google/api/client.proto";
 
 import "google/api/annotations.proto"; 
-import "google/api/client.proto";
+import "google/api/resource.proto";
 import "google/api/field_behavior.proto";
-import "google/protobuf/timestamp.proto";
-import "google/protobuf/field_mask.proto";
+import "google/protobuf/timestamp.proto"; 
 import "buf/validate/validate.proto";
 import "v1/annotation.proto";
 
-service HelloService {
+// 微笑服务
+service HelloService {  
+  // google/api/client.proto 这个给到的注解
+  option (google.api.default_host) = "huige.api.com";
+  option (google.api.oauth_scopes) = "https://www.huige.com/auth/user";
+  option (google.api.api_version) = "v1_20250821_preview";
+ 
+
+  // 获取用户信息
   rpc GetUser(Req) returns (User) {
     option (google.api.http) = {
       post: "/v1/{name=users/*}", 
@@ -29,27 +38,36 @@ service HelloService {
   }
 } 
 
-
 // 请求参数
- message Req {    
-  // 年龄
-  // 3. 年龄限制
+message Req {    
+  // 1. 字段级别的注解1
+  option (google.api.resource) = {
+    type: "x.x.xcom/Log";
+    pattern: "{project}/logs/{log}" // 或 {folder}/logs/{log}，取决于父级资源
+  };
+ 
+
+
+  // 年龄 
   int32 age = 3 [(buf.validate.field).cel = {
       id: "req.age",
       expression: "this < 18 ? '用户至少年满18岁': ''"
     }];
     
 
-  // 4. 日期限制 
+  // 购买日期
   google.protobuf.Timestamp purchase_date = 4;
+  // 交付日期
   google.protobuf.Timestamp delivery_date = 5;
 
+  // 购买日期要求说明
   option (buf.validate.message).cel = {
     id: "req.delivery_date",
-    message: "Delivery date 必须在 purchase date之后",
+    message: "delivery date 必须在 purchase date之后",
     expression: "this.delivery_date > this.purchase_date"
   };
 
+  // 物品名
   string name = 10 [(google.api.field_behavior) = REQUIRED];
 }
 
@@ -77,17 +95,14 @@ NON_EMPTY = 7;
 表示该字段不能为空。对于字符串类型，表示字符串长度必须大于 0；对于重复字段，表示列表必须至少包含一个元素
 */ 
 
-// 返回参数。用户信息
+// 用户信息
 message User {
   reserved 6;
-
-  // 用户ID
-  // The ID of the user.
-  // Format: users/{user}. {user} is a system-generated unique ID.
+ 
+  // 用户id 
   string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
 
-  // The name of the user.
-  // Format: users/{user}. {user} is a system-generated unique ID.
+  // 用户名
   string name = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
   
 }

@@ -4,12 +4,16 @@
 openapi: 3.0.3
 info:
     title: HelloService API
+    description: 微笑服务
     version: 0.0.1
+servers:
+    - url: https://huige.api.com
 paths:
     /v1/users/{user}:
         post:
             tags:
                 - HelloService
+            description: 获取用户信息
             operationId: HelloService_GetUser
             parameters:
                 - name: user
@@ -54,24 +58,19 @@ components:
             properties:
                 age:
                     type: integer
-                    description: |-
-                        年龄
-                         3. 年龄限制
+                    description: 年龄
                     format: int32
                 purchaseDate:
                     type: string
-                    description: 4. 日期限制
+                    description: 购买日期
                     format: date-time
                 deliveryDate:
                     type: string
+                    description: 交付日期
                     format: date-time
                 name:
                     type: string
-                    description: |-
-                        姓名
-                         The name of the branch.
-                         Format: projects/{project}/branches/{branch}
-                         {branch} should be the id of a sheet.
+                    description: 物品名
             description: 请求参数
         Status:
             type: object
@@ -92,12 +91,14 @@ components:
         User:
             type: object
             properties:
+                id:
+                    readOnly: true
+                    type: string
+                    description: 用户id
                 name:
                     readOnly: true
                     type: string
-                    description: |-
-                        The name of the user.
-                         Format: users/{user}. {user} is a system-generated unique ID.
+                    description: 用户名
             description: 返回参数。用户信息
 tags:
     - name: HelloService

@@ -18,6 +18,7 @@
   "paths": {
     "/v1/{name}": {
       "post": {
+        "summary": "获取用户信息",
         "operationId": "HelloService_GetUser",
         "responses": {
           "200": {
@@ -36,7 +37,7 @@
         "parameters": [
           {
             "name": "name",
-            "description": "姓名\nThe name of the branch.\nFormat: projects/{project}/branches/{branch}\n{branch} should be the id of a sheet.",
+            "description": "物品名",
             "in": "path",
             "required": true,
             "type": "string",
@@ -64,16 +65,17 @@
         "age": {
           "type": "integer",
           "format": "int32",
-          "title": "年龄\n3. 年龄限制"
+          "title": "年龄"
         },
         "purchaseDate": {
           "type": "string",
           "format": "date-time",
-          "title": "4. 日期限制"
+          "title": "购买日期"
         },
         "deliveryDate": {
           "type": "string",
-          "format": "date-time"
+          "format": "date-time",
+          "title": "交付日期"
         }
       },
       "title": "请求参数"
@@ -109,9 +111,14 @@
     "v1User": {
       "type": "object",
       "properties": {
+        "id": {
+          "type": "string",
+          "title": "用户id",
+          "readOnly": true
+        },
         "name": {
           "type": "string",
-          "description": "The name of the user.\nFormat: users/{user}. {user} is a system-generated unique ID.",
+          "title": "用户名",
           "readOnly": true
         }
       },

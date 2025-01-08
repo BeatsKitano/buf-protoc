@@ -7,31 +7,25 @@ export const protobufPackage = "api.v1";
 
 /** 请求参数 */
 export interface Req {
-  /**
-   * 年龄
-   * 3. 年龄限制
-   */
+  /** 年龄 */
   age: number;
-  /** 4. 日期限制 */
-  purchaseDate: Date | undefined;
+  /** 购买日期 */
+  purchaseDate:
+    | Date
+    | undefined;
+  /** 交付日期 */
   deliveryDate:
     | Date
     | undefined;
-  /**
-   * 姓名
-   * The name of the branch.
-   * Format: projects/{project}/branches/{branch}
-   * {branch} should be the id of a sheet.
-   */
+  /** 物品名 */
   name: string;
 }
 
 /** 返回参数。用户信息 */
 export interface User {
-  /**
-   * The name of the user.
-   * Format: users/{user}. {user} is a system-generated unique ID.
-   */
+  /** 用户id */
+  id: string;
+  /** 用户名 */
   name: string;
 }
 
@@ -140,13 +134,16 @@ export const Req = {
 };
 
 function createBaseUser(): User {
-  return { name: "" };
+  return { id: "", name: "" };
 }
 
 export const User = {
   encode(message: User, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.id !== "") {
+      writer.uint32(10).string(message.id);
+    }
     if (message.name !== "") {
-      writer.uint32(10).string(message.name);
+      writer.uint32(18).string(message.name);
     }
     return writer;
   },
@@ -163,6 +160,13 @@ export const User = {
             break;
           }
 
+          message.id = reader.string();
+          continue;
+        case 2:
+          if (tag !== 18) {
+            break;
+          }
+
           message.name = reader.string();
           continue;
       }
@@ -175,11 +179,17 @@ export const User = {
   },
 
   fromJSON(object: any): User {
-    return { name: isSet(object.name) ? globalThis.String(object.name) : "" };
+    return {
+      id: isSet(object.id) ? globalThis.String(object.id) : "",
+      name: isSet(object.name) ? globalThis.String(object.name) : "",
+    };
   },
 
   toJSON(message: User): unknown {
     const obj: any = {};
+    if (message.id !== "") {
+      obj.id = message.id;
+    }
     if (message.name !== "") {
       obj.name = message.name;
     }
@@ -191,16 +201,19 @@ export const User = {
   },
   fromPartial(object: DeepPartial<User>): User {
     const message = createBaseUser();
+    message.id = object.id ?? "";
     message.name = object.name ?? "";
     return message;
   },
 };
 
+/** 微笑服务 */
 export type HelloServiceDefinition = typeof HelloServiceDefinition;
 export const HelloServiceDefinition = {
   name: "HelloService",
   fullName: "api.v1.HelloService",
   methods: {
+    /** 获取用户信息 */
     getUser: {
       name: "GetUser",
       requestType: Req,

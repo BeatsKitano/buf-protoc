@@ -25,7 +25,10 @@ const (
 // HelloServiceClient is the client API for HelloService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+//
+// 微笑服务
 type HelloServiceClient interface {
+	// 获取用户信息
 	GetUser(ctx context.Context, in *Req, opts ...grpc.CallOption) (*User, error)
 }
 
@@ -50,7 +53,10 @@ func (c *helloServiceClient) GetUser(ctx context.Context, in *Req, opts ...grpc.
 // HelloServiceServer is the server API for HelloService service.
 // All implementations must embed UnimplementedHelloServiceServer
 // for forward compatibility.
+//
+// 微笑服务
 type HelloServiceServer interface {
+	// 获取用户信息
 	GetUser(context.Context, *Req) (*User, error)
 	mustEmbedUnimplementedHelloServiceServer()
 }

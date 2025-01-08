@@ -387,32 +387,28 @@
                   <td>age</td>
                   <td><a href="#int32">int32</a></td>
                   <td></td>
-                  <td><p>年龄
-3. 年龄限制 </p></td>
+                  <td><p>年龄 </p></td>
                 </tr>
               
                 <tr>
                   <td>purchase_date</td>
                   <td><a href="#google.protobuf.Timestamp">google.protobuf.Timestamp</a></td>
                   <td></td>
-                  <td><p>4. 日期限制 </p></td>
+                  <td><p>购买日期 </p></td>
                 </tr>
               
                 <tr>
                   <td>delivery_date</td>
                   <td><a href="#google.protobuf.Timestamp">google.protobuf.Timestamp</a></td>
                   <td></td>
-                  <td><p> </p></td>
+                  <td><p>交付日期 </p></td>
                 </tr>
               
                 <tr>
                   <td>name</td>
                   <td><a href="#string">string</a></td>
                   <td></td>
-                  <td><p>姓名
-The name of the branch.
-Format: projects/{project}/branches/{branch}
-{branch} should be the id of a sheet. </p></td>
+                  <td><p>物品名 </p></td>
                 </tr>
               
             </tbody>
@@ -433,11 +429,17 @@ Format: projects/{project}/branches/{branch}
             <tbody>
               
                 <tr>
+                  <td>id</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>用户id </p></td>
+                </tr>
+              
+                <tr>
                   <td>name</td>
                   <td><a href="#string">string</a></td>
                   <td></td>
-                  <td><p>The name of the user.
-Format: users/{user}. {user} is a system-generated unique ID. </p></td>
+                  <td><p>用户名 </p></td>
                 </tr>
               
             </tbody>
@@ -454,7 +456,7 @@ Format: users/{user}. {user} is a system-generated unique ID. </p></td>
 
       
         <h3 id="api.v1.HelloService">HelloService</h3>
-        <p></p>
+        <p>微笑服务</p>
         <table class="enum-table">
           <thead>
             <tr><td>Method Name</td><td>Request Type</td><td>Response Type</td><td>Description</td></tr>
@@ -465,7 +467,7 @@ Format: users/{user}. {user} is a system-generated unique ID. </p></td>
                 <td>GetUser</td>
                 <td><a href="#api.v1.Req">Req</a></td>
                 <td><a href="#api.v1.User">User</a></td>
-                <td><p></p></td>
+                <td><p>获取用户信息</p></td>
               </tr>
             
           </tbody>

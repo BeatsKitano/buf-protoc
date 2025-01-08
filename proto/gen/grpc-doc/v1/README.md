@@ -94,10 +94,10 @@
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| age | [int32](#int32) |  | 年龄 3. 年龄限制 |
-| purchase_date | [google.protobuf.Timestamp](#google-protobuf-Timestamp) |  | 4. 日期限制 |
-| delivery_date | [google.protobuf.Timestamp](#google-protobuf-Timestamp) |  |  |
-| name | [string](#string) |  | 姓名 The name of the branch. Format: projects/{project}/branches/{branch} {branch} should be the id of a sheet. |
+| age | [int32](#int32) |  | 年龄 |
+| purchase_date | [google.protobuf.Timestamp](#google-protobuf-Timestamp) |  | 购买日期 |
+| delivery_date | [google.protobuf.Timestamp](#google-protobuf-Timestamp) |  | 交付日期 |
+| name | [string](#string) |  | 物品名 |
 
 
 
@@ -112,7 +112,8 @@
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| name | [string](#string) |  | The name of the user. Format: users/{user}. {user} is a system-generated unique ID. |
+| id | [string](#string) |  | 用户id |
+| name | [string](#string) |  | 用户名 |
 
 
 
@@ -128,11 +129,11 @@
 <a name="api-v1-HelloService"></a>
 
 ### HelloService
-
+微笑服务
 
 | Method Name | Request Type | Response Type | Description |
 | ----------- | ------------ | ------------- | ------------|
-| GetUser | [Req](#api-v1-Req) | [User](#api-v1-User) |  |
+| GetUser | [Req](#api-v1-Req) | [User](#api-v1-User) | 获取用户信息 |
 
  
 
