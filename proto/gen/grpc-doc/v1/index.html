@@ -419,7 +419,7 @@
         
       
         <h3 id="api.v1.User">User</h3>
-        <p>返回参数。用户信息</p>
+        <p>用户信息</p>
 
         
           <table class="field-table">
@@ -456,7 +456,7 @@
 
       
         <h3 id="api.v1.HelloService">HelloService</h3>
-        <p>微笑服务</p>
+        <p>提供问候语服务。</p><p>1. 服务级别的注解 option (google.api.default_host) = "https://huige.api.com";</p><p>2. 服务级别的注解 option (google.api.oauth_scopes) = "https://www.huige.com/auth/user";</p><p>3. 服务级别的注解</p><p>4. 服务级别的注解</p><p>5. 服务级别的注解</p>
         <table class="enum-table">
           <thead>
             <tr><td>Method Name</td><td>Request Type</td><td>Response Type</td><td>Description</td></tr>
@@ -467,7 +467,8 @@
                 <td>GetUser</td>
                 <td><a href="#api.v1.Req">Req</a></td>
                 <td><a href="#api.v1.User">User</a></td>
-                <td><p>获取用户信息</p></td>
+                <td><p>获取用户信息
+@openapi.security: BearerAuth</p></td>
               </tr>
             
           </tbody>

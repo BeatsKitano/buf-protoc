@@ -12,15 +12,20 @@ import "google/protobuf/timestamp.proto";
 import "buf/validate/validate.proto";
 import "v1/annotation.proto";
 
-// 微笑服务
+// 提供问候语服务。
+// 1. 服务级别的注解 option (google.api.default_host) = "https://huige.api.com";
+// 2. 服务级别的注解 option (google.api.oauth_scopes) = "https://www.huige.com/auth/user";
+// 3. 服务级别的注解
+// 4. 服务级别的注解
+// 5. 服务级别的注解
 service HelloService {  
   // google/api/client.proto 这个给到的注解
-  option (google.api.default_host) = "huige.api.com";
+  option (google.api.default_host) = "https://huige.api.com";
   option (google.api.oauth_scopes) = "https://www.huige.com/auth/user";
   option (google.api.api_version) = "v1_20250821_preview";
  
 
-  // 获取用户信息
+  // 获取用户信息 
   rpc GetUser(Req) returns (User) {
     option (google.api.http) = {
       post: "/v1/{name=users/*}", 
@@ -46,13 +51,11 @@ message Req {
     pattern: "{project}/logs/{log}" // 或 {folder}/logs/{log}，取决于父级资源
   };
  
-
-
   // 年龄 
   int32 age = 3 [(buf.validate.field).cel = {
-      id: "req.age",
-      expression: "this < 18 ? '用户至少年满18岁': ''"
-    }];
+    id: "req.age",
+    expression: "this < 18 ? '用户至少年满18岁': ''"
+  }];
     
 
   // 购买日期

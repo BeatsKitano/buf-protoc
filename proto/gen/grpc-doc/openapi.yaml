@@ -4,7 +4,13 @@
 openapi: 3.0.3
 info:
     title: HelloService API
-    description: 微笑服务
+    description: |-
+        提供问候语服务。
+         1. 服务级别的注解 option (google.api.default_host) = "https://huige.api.com";
+         2. 服务级别的注解 option (google.api.oauth_scopes) = "https://www.huige.com/auth/user";
+         3. 服务级别的注解
+         4. 服务级别的注解
+         5. 服务级别的注解
     version: 0.0.1
 servers:
     - url: https://huige.api.com
@@ -13,7 +19,9 @@ paths:
         post:
             tags:
                 - HelloService
-            description: 获取用户信息
+            description: |-
+                获取用户信息
+                 @openapi.security: BearerAuth
             operationId: HelloService_GetUser
             parameters:
                 - name: user
@@ -99,6 +107,6 @@ components:
                     readOnly: true
                     type: string
                     description: 用户名
-            description: 返回参数。用户信息
+            description: 用户信息
 tags:
     - name: HelloService

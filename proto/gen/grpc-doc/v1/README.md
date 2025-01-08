@@ -107,7 +107,7 @@
 <a name="api-v1-User"></a>
 
 ### User
-返回参数。用户信息
+用户信息
 
 
 | Field | Type | Label | Description |
@@ -129,11 +129,16 @@
 <a name="api-v1-HelloService"></a>
 
 ### HelloService
-微笑服务
+提供问候语服务。
+1. 服务级别的注解 option (google.api.default_host) = &#34;https://huige.api.com&#34;;
+2. 服务级别的注解 option (google.api.oauth_scopes) = &#34;https://www.huige.com/auth/user&#34;;
+3. 服务级别的注解
+4. 服务级别的注解
+5. 服务级别的注解
 
 | Method Name | Request Type | Response Type | Description |
 | ----------- | ------------ | ------------- | ------------|
-| GetUser | [Req](#api-v1-Req) | [User](#api-v1-User) | 获取用户信息 |
+| GetUser | [Req](#api-v1-Req) | [User](#api-v1-User) | 获取用户信息 @openapi.security: BearerAuth |
 
  
 

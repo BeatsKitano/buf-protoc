@@ -26,9 +26,15 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 //
-// 微笑服务
+// 提供问候语服务。
+// 1. 服务级别的注解 option (google.api.default_host) = "https://huige.api.com";
+// 2. 服务级别的注解 option (google.api.oauth_scopes) = "https://www.huige.com/auth/user";
+// 3. 服务级别的注解
+// 4. 服务级别的注解
+// 5. 服务级别的注解
 type HelloServiceClient interface {
 	// 获取用户信息
+	// @openapi.security: BearerAuth
 	GetUser(ctx context.Context, in *Req, opts ...grpc.CallOption) (*User, error)
 }
 
@@ -54,9 +60,15 @@ func (c *helloServiceClient) GetUser(ctx context.Context, in *Req, opts ...grpc.
 // All implementations must embed UnimplementedHelloServiceServer
 // for forward compatibility.
 //
-// 微笑服务
+// 提供问候语服务。
+// 1. 服务级别的注解 option (google.api.default_host) = "https://huige.api.com";
+// 2. 服务级别的注解 option (google.api.oauth_scopes) = "https://www.huige.com/auth/user";
+// 3. 服务级别的注解
+// 4. 服务级别的注解
+// 5. 服务级别的注解
 type HelloServiceServer interface {
 	// 获取用户信息
+	// @openapi.security: BearerAuth
 	GetUser(context.Context, *Req) (*User, error)
 	mustEmbedUnimplementedHelloServiceServer()
 }

@@ -18,7 +18,7 @@
   "paths": {
     "/v1/{name}": {
       "post": {
-        "summary": "获取用户信息",
+        "summary": "获取用户信息\n@openapi.security: BearerAuth",
         "operationId": "HelloService_GetUser",
         "responses": {
           "200": {
@@ -122,7 +122,7 @@
           "readOnly": true
         }
       },
-      "title": "返回参数。用户信息"
+      "title": "用户信息"
     }
   }
 }
