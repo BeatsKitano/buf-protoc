@@ -19,7 +19,7 @@ import (
 
 	v1pb "buf-protoc/proto/gen/go/v1"
 
-	apiv1 "buf-protoc/api/v1"
+	apiv1 "buf-protoc/backend/api/v1"
 
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/reflect/protoreflect"

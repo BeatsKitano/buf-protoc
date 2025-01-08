@@ -7,6 +7,7 @@ require (
 	github.com/bufbuild/protovalidate-go v0.8.2
 	github.com/go-kratos/kratos v1.0.1
 	github.com/golang-jwt/jwt/v5 v5.2.1
+	github.com/google/wire v0.6.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.25.1
 	github.com/hashicorp/golang-lru/v2 v2.0.7
 	github.com/labstack/echo v3.3.10+incompatible
