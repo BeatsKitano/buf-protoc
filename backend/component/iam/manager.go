@@ -35,7 +35,7 @@ func NewManager(repository *repository.Repository) (*Manager, error) {
 // Check if the user has permission on the resource hierarchy.
 // CEL on the binding is not considered.
 // When multiple projects are specified, the user should have permission on every projects.
-func (m *Manager) CheckPermission(ctx context.Context, p Permission, userID int) (bool, error) {
+func (m *Manager) CheckPermission(ctx context.Context, p string) (bool, error) {
 	return false, nil
 }
 

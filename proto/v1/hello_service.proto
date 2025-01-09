@@ -10,15 +10,10 @@ import "google/api/field_behavior.proto";
 import "google/type/expr.proto";
 import "google/protobuf/timestamp.proto"; 
 import "buf/validate/validate.proto";
-import "v1/annotation.proto";
-import "v1/common.proto";
+import "v1/annotation.proto"; 
 
 // 提供问候语服务。
-// 1. 服务级别的注解 option (google.api.default_host) = "https://huige.api.com";
-// 2. 服务级别的注解 option (google.api.oauth_scopes) = "https://www.huige.com/auth/user";
-// 3. 服务级别的注解
-// 4. 服务级别的注解
-// 5. 服务级别的注解
+// 1. 服务级别的注解 option (google.api.default_host) = "https://huige.api.com"; 
 service HelloService {  
   // google/api/client.proto 这个给到的注解
   option (google.api.default_host) = "https://huige.api.com";
@@ -44,14 +39,6 @@ service HelloService {
       timeout: 1000
     };
   }
-
-  // 使用<br>换行
-  // instances/*/databases/*的注解<br>
-  // Gets the database with the given name.<br>
-  // The name must be in the format: instances/{instance}/databases/{database}.
-  rpc GetDatabase(GetDatabaseRequest) returns (Database) {
-    option (google.api.http) = {get: "/v1/{name=instances/*/databases/*}"};
-  }
 } 
 
 // 请求参数
@@ -66,38 +53,7 @@ message GetUserRequest {
   // 字段解释描述文本
   // 
   // syntax. CEL is a C-like expression language. The syntax and semantics of CEL
-  // 
-  // are documented at https://github.com/google/cel-spec.
-  // {
-  //   "age": 25,
-  //   "purchase_date": {
-  //     "seconds": 1680054400, // 2023-03-27T00:00:00Z
-  //     "nanos": 0
-  //   },
-  //   "delivery_date": {
-  //     "seconds": 1680140800, // 2023-03-28T00:00:00Z
-  //     "nanos": 0
-  //   },
-  //   "name": "productA",
-  //   "custom_expr": {
-  //     // 自定义表达式的JSON表示，根据具体需求填充
-  //     "expr": "value > 10",
-  //     "type": "BOOL"
-  //   }
-  // }
-  //
-  // 段落1:
-  //
-  //     标题1
-  //     这就是描述1
-  //     document.summary.size() < 100
-  //
-  // 段落2: 
-  // 
-  //     标题2
-  //     这就是描述2
-  //     document.owner == request.auth.claims.email
-  //
+  //   
   int32 age = 3 [(buf.validate.field).cel = {
     id: "GetUserRequest.age",
     expression: "this < 18 ? '用户至少年满18岁': ''"
@@ -122,82 +78,7 @@ message GetUserRequest {
   // 自定义表达式
   google.type.Expr custom_expr = 11;
 }
-
-message GetDatabaseRequest {
-  // The name of the database to retrieve.
-  // Format: instances/{instance}/databases/{database}
-  string name = 1 [
-    (google.api.field_behavior) = REQUIRED,
-    (google.api.resource_reference) = {type: "xxx.com/Database"}
-  ];
-}
-
-
-
-message Database {
-  option (google.api.resource) = {
-    type: "huige.api.com/Database"
-    pattern: "instances/{instance}/databases/{database}"
-  };
-
-  reserved 2;
-
-  // The name of the database.
-  // Format: instances/{instance}/databases/{database}
-  // {database} is the database name in the instance.
-  string name = 1;
-
-  // The existence of a database on latest sync.
-  State sync_state = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
-
-  // The latest synchronization time.
-  google.protobuf.Timestamp successful_sync_time = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
-
-  // The project for a database.
-  // Format: projects/{project}
-  string project = 5;
-
-  // The version of database schema.
-  string schema_version = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
-
-  // The environment resource.
-  // Format: environments/prod where prod is the environment resource ID.
-  string environment = 7 [(google.api.field_behavior) = OPTIONAL];
-
-  // The effective environment based on environment tag above and environment
-  // tag on the instance. Inheritance follows
-  // https://cloud.google.com/resource-manager/docs/tags/tags-overview.
-  string effective_environment = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
-
-  // Labels will be used for deployment and policy control.
-  map<string, string> labels = 9;
  
-  // The database is available for DML prior backup.
-  bool backup_available = 11 [(google.api.field_behavior) = OUTPUT_ONLY];
-}
-
-/*
-OPTIONAL = 1;
-显式地将字段标记为可选。虽然在 proto3 中所有字段默认都是可选的，但在某些情况下，明确地使用 OPTIONAL 可以提高代码的可读性，并与其他 field_behavior 保持一致性。通常，在 proto3 中可以省略此标记，除非有特殊需要。
-
-REQUIRED = 2;
-表示该字段在请求中必须提供。如果客户端发送的请求中缺少此字段，服务器应该返回错误。
-
-OUTPUT_ONLY = 3;
-表示该字段只能由服务器设置，客户端在请求中设置此字段会被服务器忽略。此字段通常用于服务器生成的标识符、时间戳或其他只读信息。
-
-INPUT_ONLY = 4;
-与 OUTPUT_ONLY 相反，表示该字段只能由客户端设置，服务器在处理请求后不应该修改此字段。此字段的使用场景相对较少。
-
-IMMUTABLE = 5;
-表示该字段一旦设置就不能被修改。在创建资源时可以设置此字段，但在后续的更新请求中修改此字段应该会导致错误。
-
-UNORDERED_LIST = 6;
-用于重复字段，表示列表元素的顺序不重要。服务器可以以任何顺序返回列表元素，客户端不应该依赖于特定的顺序。
-
-NON_EMPTY = 7;
-表示该字段不能为空。对于字符串类型，表示字符串长度必须大于 0；对于重复字段，表示列表必须至少包含一个元素
-*/ 
 
 // 用户信息
 message User {

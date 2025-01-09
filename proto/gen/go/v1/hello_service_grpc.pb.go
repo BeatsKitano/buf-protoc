@@ -19,8 +19,7 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	HelloService_GetUser_FullMethodName     = "/api.v1.HelloService/GetUser"
-	HelloService_GetDatabase_FullMethodName = "/api.v1.HelloService/GetDatabase"
+	HelloService_GetUser_FullMethodName = "/api.v1.HelloService/GetUser"
 )
 
 // HelloServiceClient is the client API for HelloService service.
@@ -29,18 +28,9 @@ const (
 //
 // 提供问候语服务。
 // 1. 服务级别的注解 option (google.api.default_host) = "https://huige.api.com";
-// 2. 服务级别的注解 option (google.api.oauth_scopes) = "https://www.huige.com/auth/user";
-// 3. 服务级别的注解
-// 4. 服务级别的注解
-// 5. 服务级别的注解
 type HelloServiceClient interface {
 	// 获取用户信息
 	GetUser(ctx context.Context, in *GetUserRequest, opts ...grpc.CallOption) (*User, error)
-	// 使用<br>换行
-	// instances/*/databases/*的注解<br>
-	// Gets the database with the given name.<br>
-	// The name must be in the format: instances/{instance}/databases/{database}.
-	GetDatabase(ctx context.Context, in *GetDatabaseRequest, opts ...grpc.CallOption) (*Database, error)
 }
 
 type helloServiceClient struct {
@@ -61,34 +51,15 @@ func (c *helloServiceClient) GetUser(ctx context.Context, in *GetUserRequest, op
 	return out, nil
 }
 
-func (c *helloServiceClient) GetDatabase(ctx context.Context, in *GetDatabaseRequest, opts ...grpc.CallOption) (*Database, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(Database)
-	err := c.cc.Invoke(ctx, HelloService_GetDatabase_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 // HelloServiceServer is the server API for HelloService service.
 // All implementations must embed UnimplementedHelloServiceServer
 // for forward compatibility.
 //
 // 提供问候语服务。
 // 1. 服务级别的注解 option (google.api.default_host) = "https://huige.api.com";
-// 2. 服务级别的注解 option (google.api.oauth_scopes) = "https://www.huige.com/auth/user";
-// 3. 服务级别的注解
-// 4. 服务级别的注解
-// 5. 服务级别的注解
 type HelloServiceServer interface {
 	// 获取用户信息
 	GetUser(context.Context, *GetUserRequest) (*User, error)
-	// 使用<br>换行
-	// instances/*/databases/*的注解<br>
-	// Gets the database with the given name.<br>
-	// The name must be in the format: instances/{instance}/databases/{database}.
-	GetDatabase(context.Context, *GetDatabaseRequest) (*Database, error)
 	mustEmbedUnimplementedHelloServiceServer()
 }
 
@@ -101,9 +72,6 @@ type UnimplementedHelloServiceServer struct{}
 
 func (UnimplementedHelloServiceServer) GetUser(context.Context, *GetUserRequest) (*User, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUser not implemented")
-}
-func (UnimplementedHelloServiceServer) GetDatabase(context.Context, *GetDatabaseRequest) (*Database, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetDatabase not implemented")
 }
 func (UnimplementedHelloServiceServer) mustEmbedUnimplementedHelloServiceServer() {}
 func (UnimplementedHelloServiceServer) testEmbeddedByValue()                      {}
@@ -144,24 +112,6 @@ func _HelloService_GetUser_Handler(srv interface{}, ctx context.Context, dec fun
 	return interceptor(ctx, in, info, handler)
 }
 
-func _HelloService_GetDatabase_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetDatabaseRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(HelloServiceServer).GetDatabase(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: HelloService_GetDatabase_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(HelloServiceServer).GetDatabase(ctx, req.(*GetDatabaseRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 // HelloService_ServiceDesc is the grpc.ServiceDesc for HelloService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -172,10 +122,6 @@ var HelloService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetUser",
 			Handler:    _HelloService_GetUser_Handler,
-		},
-		{
-			MethodName: "GetDatabase",
-			Handler:    _HelloService_GetDatabase_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

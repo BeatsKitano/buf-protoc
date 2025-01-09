@@ -9,3 +9,9 @@ enum State {
   ACTIVE = 1;
   DELETED = 2;
 }
+
+message OperateResult {
+  int32 code = 1;
+  string message = 2;
+  repeated string details = 3;
+}

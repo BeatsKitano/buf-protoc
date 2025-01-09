@@ -1,0 +1,131 @@
+syntax = "proto3";
+
+package api.v1;
+option go_package = "api/v1";
+ 
+import "google/api/client.proto"; 
+import "google/api/annotations.proto";  
+import "google/api/field_behavior.proto"; 
+import "google/protobuf/timestamp.proto"; 
+import "buf/validate/validate.proto";
+import "v1/annotation.proto";
+import "v1/common.proto";
+
+// 订单服务 
+service OrderService {   
+    option (google.api.default_host) = "https://huige.api.com";
+    option (google.api.oauth_scopes) = "https://www.huige.com/auth/user";
+    option (google.api.api_version) = "v1_20250821_preview";
+
+    // 创建订单
+    rpc CreateOrder(CreateOrderRequest) returns (Order) {
+        option (google.api.http) = {post: "/v1/orders"};
+        option (api.v1.method_extend) = {
+        auth_method : 1,
+        audit: true,
+        permission: "order.create",
+        allow_without_credential: true,
+        rpm: 10,
+        timeout: 1000
+        };
+    }
+    
+
+    // 获取订单
+    rpc GetOrder(GetOrderRequest) returns (Order) {
+        option (google.api.http) = {get: "/v1/{name=orders/*}"}; 
+        option (api.v1.method_extend) = {
+        auth_method : 1,
+        audit: true,
+        permission: "order.get",
+        allow_without_credential: true,
+        rpm: 10,
+        timeout: 1000
+        };
+    }
+
+
+    // 删除订单
+    rpc DeleteOrder(DeleteOrderRequest) returns (OperateResult) {
+        option (google.api.http) = {delete: "/v1/{name=orders/*}"};
+        option (api.v1.method_extend) = {
+        auth_method : 1,
+        audit: true,
+        permission: "order.query && order.delete",
+        allow_without_credential: true,
+        rpm: 10,
+        timeout: 1000
+        };
+    } 
+} 
+
+// 订单状态
+enum OrderStatus {
+  // 订单状态
+  ORDER_STATUS_UNSPECIFIED = 0;
+  // 订单创建
+  ORDER_STATUS_CREATED = 1;
+  // 订单已支付
+  ORDER_STATUS_PAID = 2;
+  // 订单已发货
+  ORDER_STATUS_SHIPPED = 3;
+  // 订单已送达
+  ORDER_STATUS_DELIVERED = 4;
+  // 订单已取消
+  ORDER_STATUS_CANCELLED = 5;
+    
+}
+
+message Order { 
+    // 订单id 
+    string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // 订单no
+    string no = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+
+    // 订单创建时间
+    google.protobuf.Timestamp create_time = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // 订单更新时间
+    google.protobuf.Timestamp update_time = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
+
+    // 订单状态
+    OrderStatus status = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+    
+    // 订单金额
+    double amount = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+// 创建订单参数
+message CreateOrderRequest {
+    // 订单金额
+    double amount = 1 [(google.api.field_behavior) = REQUIRED]; 
+    // 明细
+    repeated string details = 2[
+        (google.api.field_behavior) = REQUIRED,
+        (buf.validate.field).cel = {
+            id: "CreateOrderRequest.details",
+            message: "订单明细不能为空",
+            expression: "this.length < 1"
+        },
+        (buf.validate.field).cel = {
+            id: "CreateOrderRequest.details",
+            message: "明细数量不可超过10",
+            expression: "this.length > 10"
+        }
+    ];
+}
+
+// 获取订单参数
+message GetOrderRequest {    
+    string name = 10 [
+        (google.api.field_behavior) = REQUIRED,
+        (buf.validate.field).cel = {
+            id: "GetOrderRequest.name",
+            expression: "this.matches('orders/[a-zA-Z0-9]+')",
+        }
+    ];
+}
+
+// 删除订单参数
+message DeleteOrderRequest {
+    string name = 1 [(google.api.field_behavior) = REQUIRED];
+}

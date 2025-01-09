@@ -11,16 +11,25 @@
     - [File-level Extensions](#v1_annotation-proto-extensions)
   
 - [v1/common.proto](#v1_common-proto)
+    - [OperateResult](#api-v1-OperateResult)
+  
     - [State](#api-v1-State)
   
 - [v1/hello_service.proto](#v1_hello_service-proto)
-    - [Database](#api-v1-Database)
-    - [Database.LabelsEntry](#api-v1-Database-LabelsEntry)
-    - [GetDatabaseRequest](#api-v1-GetDatabaseRequest)
     - [GetUserRequest](#api-v1-GetUserRequest)
     - [User](#api-v1-User)
   
     - [HelloService](#api-v1-HelloService)
+  
+- [v1/order_service.proto](#v1_order_service-proto)
+    - [CreateOrderRequest](#api-v1-CreateOrderRequest)
+    - [DeleteOrderRequest](#api-v1-DeleteOrderRequest)
+    - [GetOrderRequest](#api-v1-GetOrderRequest)
+    - [Order](#api-v1-Order)
+  
+    - [OrderStatus](#api-v1-OrderStatus)
+  
+    - [OrderService](#api-v1-OrderService)
   
 - [Scalar Value Types](#scalar-value-types)
 
@@ -91,6 +100,23 @@
 ## v1/common.proto
 
 
+
+<a name="api-v1-OperateResult"></a>
+
+### OperateResult
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| code | [int32](#int32) |  |  |
+| message | [string](#string) |  |  |
+| details | [string](#string) | repeated |  |
+
+
+
+
+
  
 
 
@@ -121,60 +147,6 @@
 
 
 
-<a name="api-v1-Database"></a>
-
-### Database
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| name | [string](#string) |  | The name of the database. Format: instances/{instance}/databases/{database} {database} is the database name in the instance. |
-| sync_state | [State](#api-v1-State) |  | The existence of a database on latest sync. |
-| successful_sync_time | [google.protobuf.Timestamp](#google-protobuf-Timestamp) |  | The latest synchronization time. |
-| project | [string](#string) |  | The project for a database. Format: projects/{project} |
-| schema_version | [string](#string) |  | The version of database schema. |
-| environment | [string](#string) |  | The environment resource. Format: environments/prod where prod is the environment resource ID. |
-| effective_environment | [string](#string) |  | The effective environment based on environment tag above and environment tag on the instance. Inheritance follows https://cloud.google.com/resource-manager/docs/tags/tags-overview. |
-| labels | [Database.LabelsEntry](#api-v1-Database-LabelsEntry) | repeated | Labels will be used for deployment and policy control. |
-| backup_available | [bool](#bool) |  | The database is available for DML prior backup. |
-
-
-
-
-
-
-<a name="api-v1-Database-LabelsEntry"></a>
-
-### Database.LabelsEntry
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| key | [string](#string) |  |  |
-| value | [string](#string) |  |  |
-
-
-
-
-
-
-<a name="api-v1-GetDatabaseRequest"></a>
-
-### GetDatabaseRequest
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| name | [string](#string) |  | The name of the database to retrieve. Format: instances/{instance}/databases/{database} |
-
-
-
-
-
-
 <a name="api-v1-GetUserRequest"></a>
 
 ### GetUserRequest
@@ -185,17 +157,7 @@
 | ----- | ---- | ----- | ----------- |
 | age | [int32](#int32) |  | 字段解释描述文本
 
-syntax. CEL is a C-like expression language. The syntax and semantics of CEL
-
-are documented at https://github.com/google/cel-spec. { &#34;age&#34;: 25, &#34;purchase_date&#34;: { &#34;seconds&#34;: 1680054400, // 2023-03-27T00:00:00Z &#34;nanos&#34;: 0 }, &#34;delivery_date&#34;: { &#34;seconds&#34;: 1680140800, // 2023-03-28T00:00:00Z &#34;nanos&#34;: 0 }, &#34;name&#34;: &#34;productA&#34;, &#34;custom_expr&#34;: { // 自定义表达式的JSON表示，根据具体需求填充 &#34;expr&#34;: &#34;value &gt; 10&#34;, &#34;type&#34;: &#34;BOOL&#34; } }
-
-段落1:
-
- 标题1 这就是描述1 document.summary.size() &lt; 100
-
-段落2: 
-
- 标题2 这就是描述2 document.owner == request.auth.claims.email |
+syntax. CEL is a C-like expression language. The syntax and semantics of CEL |
 | purchase_date | [google.protobuf.Timestamp](#google-protobuf-Timestamp) |  | 购买日期 |
 | delivery_date | [google.protobuf.Timestamp](#google-protobuf-Timestamp) |  | 交付日期 |
 | name | [string](#string) |  | 物品名 |
@@ -234,15 +196,120 @@ are documented at https://github.com/google/cel-spec. { &#34;age&#34;: 25, &#34;
 ### HelloService
 提供问候语服务。
 1. 服务级别的注解 option (google.api.default_host) = &#34;https://huige.api.com&#34;;
-2. 服务级别的注解 option (google.api.oauth_scopes) = &#34;https://www.huige.com/auth/user&#34;;
-3. 服务级别的注解
-4. 服务级别的注解
-5. 服务级别的注解
 
 | Method Name | Request Type | Response Type | Description |
 | ----------- | ------------ | ------------- | ------------|
 | GetUser | [GetUserRequest](#api-v1-GetUserRequest) | [User](#api-v1-User) | 获取用户信息 |
-| GetDatabase | [GetDatabaseRequest](#api-v1-GetDatabaseRequest) | [Database](#api-v1-Database) | 使用&lt;br&gt;换行 instances/*/databases/*的注解&lt;br&gt; Gets the database with the given name.&lt;br&gt; The name must be in the format: instances/{instance}/databases/{database}. |
+
+ 
+
+
+
+<a name="v1_order_service-proto"></a>
+<p align="right"><a href="#top">Top</a></p>
+
+## v1/order_service.proto
+
+
+
+<a name="api-v1-CreateOrderRequest"></a>
+
+### CreateOrderRequest
+创建订单参数
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| amount | [double](#double) |  | 订单金额 |
+| details | [string](#string) | repeated | 明细 |
+
+
+
+
+
+
+<a name="api-v1-DeleteOrderRequest"></a>
+
+### DeleteOrderRequest
+删除订单参数
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| name | [string](#string) |  |  |
+
+
+
+
+
+
+<a name="api-v1-GetOrderRequest"></a>
+
+### GetOrderRequest
+获取订单参数
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| name | [string](#string) |  |  |
+
+
+
+
+
+
+<a name="api-v1-Order"></a>
+
+### Order
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| id | [string](#string) |  | 订单id |
+| no | [string](#string) |  | 订单no |
+| create_time | [google.protobuf.Timestamp](#google-protobuf-Timestamp) |  | 订单创建时间 |
+| update_time | [google.protobuf.Timestamp](#google-protobuf-Timestamp) |  | 订单更新时间 |
+| status | [OrderStatus](#api-v1-OrderStatus) |  | 订单状态 |
+| amount | [double](#double) |  | 订单金额 |
+
+
+
+
+
+ 
+
+
+<a name="api-v1-OrderStatus"></a>
+
+### OrderStatus
+订单状态
+
+| Name | Number | Description |
+| ---- | ------ | ----------- |
+| ORDER_STATUS_UNSPECIFIED | 0 | 订单状态 |
+| ORDER_STATUS_CREATED | 1 | 订单创建 |
+| ORDER_STATUS_PAID | 2 | 订单已支付 |
+| ORDER_STATUS_SHIPPED | 3 | 订单已发货 |
+| ORDER_STATUS_DELIVERED | 4 | 订单已送达 |
+| ORDER_STATUS_CANCELLED | 5 | 订单已取消 |
+
+
+ 
+
+ 
+
+
+<a name="api-v1-OrderService"></a>
+
+### OrderService
+订单服务
+
+| Method Name | Request Type | Response Type | Description |
+| ----------- | ------------ | ------------- | ------------|
+| CreateOrder | [CreateOrderRequest](#api-v1-CreateOrderRequest) | [Order](#api-v1-Order) | 创建订单 |
+| GetOrder | [GetOrderRequest](#api-v1-GetOrderRequest) | [Order](#api-v1-Order) | 获取订单 |
+| DeleteOrder | [DeleteOrderRequest](#api-v1-DeleteOrderRequest) | [OperateResult](#api-v1-OperateResult) | 删除订单 |
 
  
 

@@ -201,6 +201,10 @@
             <a href="#v1%2fcommon.proto">v1/common.proto</a>
             <ul>
               
+                <li>
+                  <a href="#api.v1.OperateResult"><span class="badge">M</span>OperateResult</a>
+                </li>
+              
               
                 <li>
                   <a href="#api.v1.State"><span class="badge">E</span>State</a>
@@ -217,18 +221,6 @@
             <ul>
               
                 <li>
-                  <a href="#api.v1.Database"><span class="badge">M</span>Database</a>
-                </li>
-              
-                <li>
-                  <a href="#api.v1.Database.LabelsEntry"><span class="badge">M</span>Database.LabelsEntry</a>
-                </li>
-              
-                <li>
-                  <a href="#api.v1.GetDatabaseRequest"><span class="badge">M</span>GetDatabaseRequest</a>
-                </li>
-              
-                <li>
                   <a href="#api.v1.GetUserRequest"><span class="badge">M</span>GetUserRequest</a>
                 </li>
               
@@ -241,6 +233,41 @@
               
                 <li>
                   <a href="#api.v1.HelloService"><span class="badge">S</span>HelloService</a>
+                </li>
+              
+            </ul>
+          </li>
+        
+          
+          <li>
+            <a href="#v1%2forder_service.proto">v1/order_service.proto</a>
+            <ul>
+              
+                <li>
+                  <a href="#api.v1.CreateOrderRequest"><span class="badge">M</span>CreateOrderRequest</a>
+                </li>
+              
+                <li>
+                  <a href="#api.v1.DeleteOrderRequest"><span class="badge">M</span>DeleteOrderRequest</a>
+                </li>
+              
+                <li>
+                  <a href="#api.v1.GetOrderRequest"><span class="badge">M</span>GetOrderRequest</a>
+                </li>
+              
+                <li>
+                  <a href="#api.v1.Order"><span class="badge">M</span>Order</a>
+                </li>
+              
+              
+                <li>
+                  <a href="#api.v1.OrderStatus"><span class="badge">E</span>OrderStatus</a>
+                </li>
+              
+              
+              
+                <li>
+                  <a href="#api.v1.OrderService"><span class="badge">S</span>OrderService</a>
                 </li>
               
             </ul>
@@ -400,6 +427,44 @@
       <p></p>
 
       
+        <h3 id="api.v1.OperateResult">OperateResult</h3>
+        <p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>code</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>message</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>details</td>
+                  <td><a href="#string">string</a></td>
+                  <td>repeated</td>
+                  <td><p> </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
 
       
         <h3 id="api.v1.State">State</h3>
@@ -443,148 +508,6 @@
       <p></p>
 
       
-        <h3 id="api.v1.Database">Database</h3>
-        <p></p>
-
-        
-          <table class="field-table">
-            <thead>
-              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
-            </thead>
-            <tbody>
-              
-                <tr>
-                  <td>name</td>
-                  <td><a href="#string">string</a></td>
-                  <td></td>
-                  <td><p>The name of the database.
-Format: instances/{instance}/databases/{database}
-{database} is the database name in the instance. </p></td>
-                </tr>
-              
-                <tr>
-                  <td>sync_state</td>
-                  <td><a href="#api.v1.State">State</a></td>
-                  <td></td>
-                  <td><p>The existence of a database on latest sync. </p></td>
-                </tr>
-              
-                <tr>
-                  <td>successful_sync_time</td>
-                  <td><a href="#google.protobuf.Timestamp">google.protobuf.Timestamp</a></td>
-                  <td></td>
-                  <td><p>The latest synchronization time. </p></td>
-                </tr>
-              
-                <tr>
-                  <td>project</td>
-                  <td><a href="#string">string</a></td>
-                  <td></td>
-                  <td><p>The project for a database.
-Format: projects/{project} </p></td>
-                </tr>
-              
-                <tr>
-                  <td>schema_version</td>
-                  <td><a href="#string">string</a></td>
-                  <td></td>
-                  <td><p>The version of database schema. </p></td>
-                </tr>
-              
-                <tr>
-                  <td>environment</td>
-                  <td><a href="#string">string</a></td>
-                  <td></td>
-                  <td><p>The environment resource.
-Format: environments/prod where prod is the environment resource ID. </p></td>
-                </tr>
-              
-                <tr>
-                  <td>effective_environment</td>
-                  <td><a href="#string">string</a></td>
-                  <td></td>
-                  <td><p>The effective environment based on environment tag above and environment
-tag on the instance. Inheritance follows
-https://cloud.google.com/resource-manager/docs/tags/tags-overview. </p></td>
-                </tr>
-              
-                <tr>
-                  <td>labels</td>
-                  <td><a href="#api.v1.Database.LabelsEntry">Database.LabelsEntry</a></td>
-                  <td>repeated</td>
-                  <td><p>Labels will be used for deployment and policy control. </p></td>
-                </tr>
-              
-                <tr>
-                  <td>backup_available</td>
-                  <td><a href="#bool">bool</a></td>
-                  <td></td>
-                  <td><p>The database is available for DML prior backup. </p></td>
-                </tr>
-              
-            </tbody>
-          </table>
-
-          
-
-        
-      
-        <h3 id="api.v1.Database.LabelsEntry">Database.LabelsEntry</h3>
-        <p></p>
-
-        
-          <table class="field-table">
-            <thead>
-              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
-            </thead>
-            <tbody>
-              
-                <tr>
-                  <td>key</td>
-                  <td><a href="#string">string</a></td>
-                  <td></td>
-                  <td><p> </p></td>
-                </tr>
-              
-                <tr>
-                  <td>value</td>
-                  <td><a href="#string">string</a></td>
-                  <td></td>
-                  <td><p> </p></td>
-                </tr>
-              
-            </tbody>
-          </table>
-
-          
-
-        
-      
-        <h3 id="api.v1.GetDatabaseRequest">GetDatabaseRequest</h3>
-        <p></p>
-
-        
-          <table class="field-table">
-            <thead>
-              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
-            </thead>
-            <tbody>
-              
-                <tr>
-                  <td>name</td>
-                  <td><a href="#string">string</a></td>
-                  <td></td>
-                  <td><p>The name of the database to retrieve.
-Format: instances/{instance}/databases/{database} </p></td>
-                </tr>
-              
-            </tbody>
-          </table>
-
-          
-
-        
-      
         <h3 id="api.v1.GetUserRequest">GetUserRequest</h3>
         <p>请求参数</p>
 
@@ -601,38 +524,7 @@ Format: instances/{instance}/databases/{database} </p></td>
                   <td></td>
                   <td><p>字段解释描述文本
 
-syntax. CEL is a C-like expression language. The syntax and semantics of CEL
-
-are documented at https://github.com/google/cel-spec.
-{
-  &#34;age&#34;: 25,
-  &#34;purchase_date&#34;: {
-    &#34;seconds&#34;: 1680054400, // 2023-03-27T00:00:00Z
-    &#34;nanos&#34;: 0
-  },
-  &#34;delivery_date&#34;: {
-    &#34;seconds&#34;: 1680140800, // 2023-03-28T00:00:00Z
-    &#34;nanos&#34;: 0
-  },
-  &#34;name&#34;: &#34;productA&#34;,
-  &#34;custom_expr&#34;: {
-    // 自定义表达式的JSON表示，根据具体需求填充
-    &#34;expr&#34;: &#34;value &gt; 10&#34;,
-    &#34;type&#34;: &#34;BOOL&#34;
-  }
-}
-
-段落1:
-
-    标题1
-    这就是描述1
-    document.summary.size() &lt; 100
-
-段落2: 
-
-    标题2
-    这就是描述2
-    document.owner == request.auth.claims.email </p></td>
+syntax. CEL is a C-like expression language. The syntax and semantics of CEL </p></td>
                 </tr>
               
                 <tr>
@@ -715,7 +607,7 @@ are documented at https://github.com/google/cel-spec.
 
       
         <h3 id="api.v1.HelloService">HelloService</h3>
-        <p>提供问候语服务。</p><p>1. 服务级别的注解 option (google.api.default_host) = "https://huige.api.com";</p><p>2. 服务级别的注解 option (google.api.oauth_scopes) = "https://www.huige.com/auth/user";</p><p>3. 服务级别的注解</p><p>4. 服务级别的注解</p><p>5. 服务级别的注解</p>
+        <p>提供问候语服务。</p><p>1. 服务级别的注解 option (google.api.default_host) = "https://huige.api.com";</p>
         <table class="enum-table">
           <thead>
             <tr><td>Method Name</td><td>Request Type</td><td>Response Type</td><td>Description</td></tr>
@@ -727,16 +619,6 @@ are documented at https://github.com/google/cel-spec.
                 <td><a href="#api.v1.GetUserRequest">GetUserRequest</a></td>
                 <td><a href="#api.v1.User">User</a></td>
                 <td><p>获取用户信息</p></td>
-              </tr>
-            
-              <tr>
-                <td>GetDatabase</td>
-                <td><a href="#api.v1.GetDatabaseRequest">GetDatabaseRequest</a></td>
-                <td><a href="#api.v1.Database">Database</a></td>
-                <td><p>使用&lt;br&gt;换行
-instances/*/databases/*的注解&lt;br&gt;
-Gets the database with the given name.&lt;br&gt;
-The name must be in the format: instances/{instance}/databases/{database}.</p></td>
               </tr>
             
           </tbody>
@@ -774,12 +656,282 @@ The name must be in the format: instances/{instance}/databases/{database}.</p></
               </tr>
               
             
+            </tbody>
+          </table>
+          
+        
+    
+      
+      <div class="file-heading">
+        <h2 id="v1/order_service.proto">v1/order_service.proto</h2><a href="#title">Top</a>
+      </div>
+      <p></p>
+
+      
+        <h3 id="api.v1.CreateOrderRequest">CreateOrderRequest</h3>
+        <p>创建订单参数</p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>amount</td>
+                  <td><a href="#double">double</a></td>
+                  <td></td>
+                  <td><p>订单金额 </p></td>
+                </tr>
+              
+                <tr>
+                  <td>details</td>
+                  <td><a href="#string">string</a></td>
+                  <td>repeated</td>
+                  <td><p>明细 </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="api.v1.DeleteOrderRequest">DeleteOrderRequest</h3>
+        <p>删除订单参数</p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>name</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="api.v1.GetOrderRequest">GetOrderRequest</h3>
+        <p>获取订单参数</p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>name</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="api.v1.Order">Order</h3>
+        <p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>id</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>订单id </p></td>
+                </tr>
+              
+                <tr>
+                  <td>no</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>订单no </p></td>
+                </tr>
+              
+                <tr>
+                  <td>create_time</td>
+                  <td><a href="#google.protobuf.Timestamp">google.protobuf.Timestamp</a></td>
+                  <td></td>
+                  <td><p>订单创建时间 </p></td>
+                </tr>
+              
+                <tr>
+                  <td>update_time</td>
+                  <td><a href="#google.protobuf.Timestamp">google.protobuf.Timestamp</a></td>
+                  <td></td>
+                  <td><p>订单更新时间 </p></td>
+                </tr>
+              
+                <tr>
+                  <td>status</td>
+                  <td><a href="#api.v1.OrderStatus">OrderStatus</a></td>
+                  <td></td>
+                  <td><p>订单状态 </p></td>
+                </tr>
+              
+                <tr>
+                  <td>amount</td>
+                  <td><a href="#double">double</a></td>
+                  <td></td>
+                  <td><p>订单金额 </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+
+      
+        <h3 id="api.v1.OrderStatus">OrderStatus</h3>
+        <p>订单状态</p>
+        <table class="enum-table">
+          <thead>
+            <tr><td>Name</td><td>Number</td><td>Description</td></tr>
+          </thead>
+          <tbody>
+            
+              <tr>
+                <td>ORDER_STATUS_UNSPECIFIED</td>
+                <td>0</td>
+                <td><p>订单状态</p></td>
+              </tr>
+            
+              <tr>
+                <td>ORDER_STATUS_CREATED</td>
+                <td>1</td>
+                <td><p>订单创建</p></td>
+              </tr>
+            
+              <tr>
+                <td>ORDER_STATUS_PAID</td>
+                <td>2</td>
+                <td><p>订单已支付</p></td>
+              </tr>
+            
+              <tr>
+                <td>ORDER_STATUS_SHIPPED</td>
+                <td>3</td>
+                <td><p>订单已发货</p></td>
+              </tr>
+            
+              <tr>
+                <td>ORDER_STATUS_DELIVERED</td>
+                <td>4</td>
+                <td><p>订单已送达</p></td>
+              </tr>
+            
+              <tr>
+                <td>ORDER_STATUS_CANCELLED</td>
+                <td>5</td>
+                <td><p>订单已取消</p></td>
+              </tr>
+            
+          </tbody>
+        </table>
+      
+
+      
+
+      
+        <h3 id="api.v1.OrderService">OrderService</h3>
+        <p>订单服务</p>
+        <table class="enum-table">
+          <thead>
+            <tr><td>Method Name</td><td>Request Type</td><td>Response Type</td><td>Description</td></tr>
+          </thead>
+          <tbody>
+            
+              <tr>
+                <td>CreateOrder</td>
+                <td><a href="#api.v1.CreateOrderRequest">CreateOrderRequest</a></td>
+                <td><a href="#api.v1.Order">Order</a></td>
+                <td><p>创建订单</p></td>
+              </tr>
+            
+              <tr>
+                <td>GetOrder</td>
+                <td><a href="#api.v1.GetOrderRequest">GetOrderRequest</a></td>
+                <td><a href="#api.v1.Order">Order</a></td>
+                <td><p>获取订单</p></td>
+              </tr>
+            
+              <tr>
+                <td>DeleteOrder</td>
+                <td><a href="#api.v1.DeleteOrderRequest">DeleteOrderRequest</a></td>
+                <td><a href="#api.v1.OperateResult">OperateResult</a></td>
+                <td><p>删除订单</p></td>
+              </tr>
+            
+          </tbody>
+        </table>
+
+        
+          
+          
+          <h4>Methods with HTTP bindings</h4>
+          <table>
+            <thead>
+              <tr>
+                <td>Method Name</td>
+                <td>Method</td>
+                <td>Pattern</td>
+                <td>Body</td>
+              </tr>
+            </thead>
+            <tbody>
+            
               
               
               <tr>
-                <td>GetDatabase</td>
+                <td>CreateOrder</td>
+                <td>POST</td>
+                <td>/v1/orders</td>
+                <td></td>
+              </tr>
+              
+            
+              
+              
+              <tr>
+                <td>GetOrder</td>
                 <td>GET</td>
-                <td>/v1/{name=instances/*/databases/*}</td>
+                <td>/v1/{name=orders/*}</td>
+                <td></td>
+              </tr>
+              
+            
+              
+              
+              <tr>
+                <td>DeleteOrder</td>
+                <td>DELETE</td>
+                <td>/v1/{name=orders/*}</td>
                 <td></td>
               </tr>
               

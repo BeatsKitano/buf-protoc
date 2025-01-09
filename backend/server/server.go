@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"buf-protoc/backend/interceptor/auth"
+	"buf-protoc/backend/interceptor/permission"
 	"buf-protoc/backend/interceptor/ratelimit"
 	"buf-protoc/backend/interceptor/timeout"
 	"buf-protoc/backend/interceptor/validator"
@@ -102,11 +103,13 @@ func NewServer(port string, profile *config.Profile) *Server {
 	authProvider := auth.New(server.methodExtends, "", state, profile)
 	ratelimitProvider := ratelimit.New(server.methodExtends)
 	timeoutProvider := timeout.New(server.methodExtends)
+	permissionProvider := permission.NewPermissionInterceptor(nil, server.methodExtends)
 
 	grpc.EnableTracing = true
 	server.grpcServer = grpc.NewServer(
 		grpc.ChainUnaryInterceptor(
 			authProvider.UnaryServerInterceptor,
+			permissionProvider.UnaryServerInterceptor(),
 			ratelimitProvider.UnaryServerInterceptor,
 			timeoutProvider.UnaryServerInterceptor,
 			validator.UnaryServerInterceptor(),
@@ -155,6 +158,7 @@ func NewServer(port string, profile *config.Profile) *Server {
 
 	// Register the gRPC server.
 	v1pb.RegisterHelloServiceServer(server.grpcServer, servicev1.NewHelloService())
+	v1pb.RegisterOrderServiceServer(server.grpcServer, servicev1.NewOrderService())
 
 	// Register grpc-gateway mux with Echo
 	server.echoServer.Any("/*", echo.WrapHandler(server.grpcGatewayMux))

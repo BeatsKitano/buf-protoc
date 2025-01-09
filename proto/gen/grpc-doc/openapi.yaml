@@ -3,38 +3,54 @@
 
 openapi: 3.0.3
 info:
-    title: HelloService API
-    description: |-
-        提供问候语服务。
-         1. 服务级别的注解 option (google.api.default_host) = "https://huige.api.com";
-         2. 服务级别的注解 option (google.api.oauth_scopes) = "https://www.huige.com/auth/user";
-         3. 服务级别的注解
-         4. 服务级别的注解
-         5. 服务级别的注解
+    title: ""
     version: 0.0.1
 servers:
     - url: https://huige.api.com
 paths:
-    /v1/instances/{instance}/databases/{database}:
+    /v1/orders:
+        post:
+            tags:
+                - OrderService
+            description: 创建订单
+            operationId: OrderService_CreateOrder
+            parameters:
+                - name: amount
+                  in: query
+                  description: 订单金额
+                  schema:
+                    type: number
+                    format: double
+                - name: details
+                  in: query
+                  description: 明细
+                  schema:
+                    type: array
+                    items:
+                        type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Order'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/orders/{order}:
         get:
             tags:
-                - HelloService
-            description: |-
-                使用<br>换行
-                 instances/*/databases/*的注解<br>
-                 Gets the database with the given name.<br>
-                 The name must be in the format: instances/{instance}/databases/{database}.
-            operationId: HelloService_GetDatabase
+                - OrderService
+            description: 获取订单
+            operationId: OrderService_GetOrder
             parameters:
-                - name: instance
+                - name: order
                   in: path
-                  description: The instance id.
-                  required: true
-                  schema:
-                    type: string
-                - name: database
-                  in: path
-                  description: The database id.
+                  description: The order id.
                   required: true
                   schema:
                     type: string
@@ -44,7 +60,32 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/Database'
+                                $ref: '#/components/schemas/Order'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+        delete:
+            tags:
+                - OrderService
+            description: 删除订单
+            operationId: OrderService_DeleteOrder
+            parameters:
+                - name: order
+                  in: path
+                  description: The order id.
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/OperateResult'
                 default:
                     description: Default error response
                     content:
@@ -156,59 +197,6 @@ paths:
                                 $ref: '#/components/schemas/Status'
 components:
     schemas:
-        Database:
-            type: object
-            properties:
-                name:
-                    type: string
-                    description: |-
-                        The name of the database.
-                         Format: instances/{instance}/databases/{database}
-                         {database} is the database name in the instance.
-                syncState:
-                    readOnly: true
-                    enum:
-                        - STATE_UNSPECIFIED
-                        - ACTIVE
-                        - DELETED
-                    type: string
-                    description: The existence of a database on latest sync.
-                    format: enum
-                successfulSyncTime:
-                    readOnly: true
-                    type: string
-                    description: The latest synchronization time.
-                    format: date-time
-                project:
-                    type: string
-                    description: |-
-                        The project for a database.
-                         Format: projects/{project}
-                schemaVersion:
-                    readOnly: true
-                    type: string
-                    description: The version of database schema.
-                environment:
-                    type: string
-                    description: |-
-                        The environment resource.
-                         Format: environments/prod where prod is the environment resource ID.
-                effectiveEnvironment:
-                    readOnly: true
-                    type: string
-                    description: |-
-                        The effective environment based on environment tag above and environment
-                         tag on the instance. Inheritance follows
-                         https://cloud.google.com/resource-manager/docs/tags/tags-overview.
-                labels:
-                    type: object
-                    additionalProperties:
-                        type: string
-                    description: Labels will be used for deployment and policy control.
-                backupAvailable:
-                    readOnly: true
-                    type: boolean
-                    description: The database is available for DML prior backup.
         Expr:
             type: object
             properties:
@@ -272,7 +260,7 @@ components:
             properties:
                 age:
                     type: integer
-                    description: "字段解释描述文本\n \n syntax. CEL is a C-like expression language. The syntax and semantics of CEL\n \n are documented at https://github.com/google/cel-spec.\n {\n   \"age\": 25,\n   \"purchase_date\": {\n     \"seconds\": 1680054400, // 2023-03-27T00:00:00Z\n     \"nanos\": 0\n   },\n   \"delivery_date\": {\n     \"seconds\": 1680140800, // 2023-03-28T00:00:00Z\n     \"nanos\": 0\n   },\n   \"name\": \"productA\",\n   \"custom_expr\": {\n     // 自定义表达式的JSON表示，根据具体需求填充\n     \"expr\": \"value > 10\",\n     \"type\": \"BOOL\"\n   }\n }\n\n 段落1:\n\n     标题1\n     这就是描述1\n     document.summary.size() < 100\n\n 段落2: \n \n     标题2\n     这就是描述2\n     document.owner == request.auth.claims.email"
+                    description: "字段解释描述文本\n \n syntax. CEL is a C-like expression language. The syntax and semantics of CEL"
                     format: int32
                 purchaseDate:
                     type: string
@@ -298,6 +286,56 @@ components:
                     description: The type of the serialized message.
             additionalProperties: true
             description: Contains an arbitrary serialized message along with a @type that describes the type of the serialized message.
+        OperateResult:
+            type: object
+            properties:
+                code:
+                    type: integer
+                    format: int32
+                message:
+                    type: string
+                details:
+                    type: array
+                    items:
+                        type: string
+        Order:
+            type: object
+            properties:
+                id:
+                    readOnly: true
+                    type: string
+                    description: 订单id
+                no:
+                    readOnly: true
+                    type: string
+                    description: 订单no
+                createTime:
+                    readOnly: true
+                    type: string
+                    description: 订单创建时间
+                    format: date-time
+                updateTime:
+                    readOnly: true
+                    type: string
+                    description: 订单更新时间
+                    format: date-time
+                status:
+                    readOnly: true
+                    enum:
+                        - ORDER_STATUS_UNSPECIFIED
+                        - ORDER_STATUS_CREATED
+                        - ORDER_STATUS_PAID
+                        - ORDER_STATUS_SHIPPED
+                        - ORDER_STATUS_DELIVERED
+                        - ORDER_STATUS_CANCELLED
+                    type: string
+                    description: 订单状态
+                    format: enum
+                amount:
+                    readOnly: true
+                    type: number
+                    description: 订单金额
+                    format: double
         Status:
             type: object
             properties:
@@ -332,3 +370,8 @@ components:
             description: 用户信息
 tags:
     - name: HelloService
+      description: |-
+        提供问候语服务。
+         1. 服务级别的注解 option (google.api.default_host) = "https://huige.api.com";
+    - name: OrderService
+      description: 订单服务
