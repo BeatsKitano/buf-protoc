@@ -19,7 +19,7 @@ import (
 
 	v1pb "buf-protoc/proto/gen/go/v1"
 
-	apiv1 "buf-protoc/backend/api/v1"
+	servicev1 "buf-protoc/backend/service/v1"
 
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/reflect/protoreflect"
@@ -154,7 +154,7 @@ func NewServer(port string, profile *config.Profile) *Server {
 	}
 
 	// Register the gRPC server.
-	v1pb.RegisterHelloServiceServer(server.grpcServer, apiv1.NewHelloService())
+	v1pb.RegisterHelloServiceServer(server.grpcServer, servicev1.NewHelloService())
 
 	// Register grpc-gateway mux with Echo
 	server.echoServer.Any("/*", echo.WrapHandler(server.grpcGatewayMux))

@@ -9,6 +9,9 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 )
 
 const (
@@ -27,12 +30,17 @@ ________________________________________________________________________________
 `
 )
 
+func init() {
+	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
+	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
+}
+
 func newApp() *server.Server {
+	log.Debug().Str("app", "init").Msg("Initializing server...")
 	return server.NewServer(":36789", &config.Profile{})
 }
 
 func main() {
-
 	app := newApp()
 
 	// Setup signal handlers.
