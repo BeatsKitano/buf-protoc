@@ -4,7 +4,7 @@ package mail
 import (
 	"buf-protoc/backend/component/iam"
 	"buf-protoc/backend/component/state"
-	"buf-protoc/backend/store"
+	"buf-protoc/backend/repository"
 
 	"context"
 	"embed"
@@ -35,7 +35,7 @@ var (
 )
 
 // NewSender creates a new slow query weekly mail sender.
-func NewSender(store *store.Store, stateCfg *state.State, iamManager *iam.Manager) *SlowQueryWeeklyMailSender {
+func NewSender(store *repository.Repository, stateCfg *state.State, iamManager *iam.Manager) *SlowQueryWeeklyMailSender {
 	return &SlowQueryWeeklyMailSender{
 		store:      store,
 		stateCfg:   stateCfg,
@@ -45,7 +45,7 @@ func NewSender(store *store.Store, stateCfg *state.State, iamManager *iam.Manage
 
 // SlowQueryWeeklyMailSender is the slow query weekly mail sender.
 type SlowQueryWeeklyMailSender struct {
-	store      *store.Store
+	store      *repository.Repository
 	stateCfg   *state.State
 	iamManager *iam.Manager
 }
@@ -56,7 +56,7 @@ func (s *SlowQueryWeeklyMailSender) Run(ctx context.Context, wg *sync.WaitGroup)
 	defer ticker.Stop()
 	defer wg.Done()
 	slog.Debug("Slow query weekly mail sender started")
-	
+
 	for {
 		select {
 		case <-ctx.Done():

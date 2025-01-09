@@ -5,7 +5,7 @@ import (
 	_ "embed"
 
 	"buf-protoc/backend/domain"
-	"buf-protoc/backend/store"
+	"buf-protoc/backend/repository"
 )
 
 //go:embed acl.yaml
@@ -22,12 +22,12 @@ type acl struct {
 type Manager struct {
 	groupMembers    map[string]map[string]bool
 	PredefinedRoles []*domain.Role
-	store           *store.Store
+	repository      *repository.Repository
 }
 
-func NewManager(store *store.Store) (*Manager, error) {
+func NewManager(repository *repository.Repository) (*Manager, error) {
 	m := &Manager{
-		store: store,
+		repository: repository,
 	}
 	return m, nil
 }
