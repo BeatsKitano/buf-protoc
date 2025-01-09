@@ -9,6 +9,13 @@ type Catalog struct {
 	ParentID int    `json:"parent_id,omitempty"`
 }
 
+type CatalogFilter struct {
+	Id         *int
+	Name       *string
+	PathPrefix *string
+	ParentID   *int
+}
+
 type CatalogRepository interface {
 	FindById(ctx context.Context, id uint64) (*Catalog, error)
 	Save(ctx context.Context, user *Catalog) error
