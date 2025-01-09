@@ -19,7 +19,8 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	HelloService_GetUser_FullMethodName = "/api.v1.HelloService/GetUser"
+	HelloService_GetUser_FullMethodName     = "/api.v1.HelloService/GetUser"
+	HelloService_GetDatabase_FullMethodName = "/api.v1.HelloService/GetDatabase"
 )
 
 // HelloServiceClient is the client API for HelloService service.
@@ -34,8 +35,12 @@ const (
 // 5. 服务级别的注解
 type HelloServiceClient interface {
 	// 获取用户信息
-	// @openapi.security: BearerAuth
-	GetUser(ctx context.Context, in *Req, opts ...grpc.CallOption) (*User, error)
+	GetUser(ctx context.Context, in *GetUserRequest, opts ...grpc.CallOption) (*User, error)
+	// 使用<br>换行
+	// instances/*/databases/*的注解<br>
+	// Gets the database with the given name.<br>
+	// The name must be in the format: instances/{instance}/databases/{database}.
+	GetDatabase(ctx context.Context, in *GetDatabaseRequest, opts ...grpc.CallOption) (*Database, error)
 }
 
 type helloServiceClient struct {
@@ -46,10 +51,20 @@ func NewHelloServiceClient(cc grpc.ClientConnInterface) HelloServiceClient {
 	return &helloServiceClient{cc}
 }
 
-func (c *helloServiceClient) GetUser(ctx context.Context, in *Req, opts ...grpc.CallOption) (*User, error) {
+func (c *helloServiceClient) GetUser(ctx context.Context, in *GetUserRequest, opts ...grpc.CallOption) (*User, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(User)
 	err := c.cc.Invoke(ctx, HelloService_GetUser_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *helloServiceClient) GetDatabase(ctx context.Context, in *GetDatabaseRequest, opts ...grpc.CallOption) (*Database, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(Database)
+	err := c.cc.Invoke(ctx, HelloService_GetDatabase_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -68,8 +83,12 @@ func (c *helloServiceClient) GetUser(ctx context.Context, in *Req, opts ...grpc.
 // 5. 服务级别的注解
 type HelloServiceServer interface {
 	// 获取用户信息
-	// @openapi.security: BearerAuth
-	GetUser(context.Context, *Req) (*User, error)
+	GetUser(context.Context, *GetUserRequest) (*User, error)
+	// 使用<br>换行
+	// instances/*/databases/*的注解<br>
+	// Gets the database with the given name.<br>
+	// The name must be in the format: instances/{instance}/databases/{database}.
+	GetDatabase(context.Context, *GetDatabaseRequest) (*Database, error)
 	mustEmbedUnimplementedHelloServiceServer()
 }
 
@@ -80,8 +99,11 @@ type HelloServiceServer interface {
 // pointer dereference when methods are called.
 type UnimplementedHelloServiceServer struct{}
 
-func (UnimplementedHelloServiceServer) GetUser(context.Context, *Req) (*User, error) {
+func (UnimplementedHelloServiceServer) GetUser(context.Context, *GetUserRequest) (*User, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUser not implemented")
+}
+func (UnimplementedHelloServiceServer) GetDatabase(context.Context, *GetDatabaseRequest) (*Database, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetDatabase not implemented")
 }
 func (UnimplementedHelloServiceServer) mustEmbedUnimplementedHelloServiceServer() {}
 func (UnimplementedHelloServiceServer) testEmbeddedByValue()                      {}
@@ -105,7 +127,7 @@ func RegisterHelloServiceServer(s grpc.ServiceRegistrar, srv HelloServiceServer)
 }
 
 func _HelloService_GetUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Req)
+	in := new(GetUserRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -117,7 +139,25 @@ func _HelloService_GetUser_Handler(srv interface{}, ctx context.Context, dec fun
 		FullMethod: HelloService_GetUser_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(HelloServiceServer).GetUser(ctx, req.(*Req))
+		return srv.(HelloServiceServer).GetUser(ctx, req.(*GetUserRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _HelloService_GetDatabase_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetDatabaseRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HelloServiceServer).GetDatabase(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: HelloService_GetDatabase_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HelloServiceServer).GetDatabase(ctx, req.(*GetDatabaseRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -132,6 +172,10 @@ var HelloService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetUser",
 			Handler:    _HelloService_GetUser_Handler,
+		},
+		{
+			MethodName: "GetDatabase",
+			Handler:    _HelloService_GetDatabase_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

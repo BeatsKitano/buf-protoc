@@ -198,11 +198,38 @@
         
           
           <li>
+            <a href="#v1%2fcommon.proto">v1/common.proto</a>
+            <ul>
+              
+              
+                <li>
+                  <a href="#api.v1.State"><span class="badge">E</span>State</a>
+                </li>
+              
+              
+              
+            </ul>
+          </li>
+        
+          
+          <li>
             <a href="#v1%2fhello_service.proto">v1/hello_service.proto</a>
             <ul>
               
                 <li>
-                  <a href="#api.v1.Req"><span class="badge">M</span>Req</a>
+                  <a href="#api.v1.Database"><span class="badge">M</span>Database</a>
+                </li>
+              
+                <li>
+                  <a href="#api.v1.Database.LabelsEntry"><span class="badge">M</span>Database.LabelsEntry</a>
+                </li>
+              
+                <li>
+                  <a href="#api.v1.GetDatabaseRequest"><span class="badge">M</span>GetDatabaseRequest</a>
+                </li>
+              
+                <li>
+                  <a href="#api.v1.GetUserRequest"><span class="badge">M</span>GetUserRequest</a>
                 </li>
               
                 <li>
@@ -368,12 +395,197 @@
     
       
       <div class="file-heading">
+        <h2 id="v1/common.proto">v1/common.proto</h2><a href="#title">Top</a>
+      </div>
+      <p></p>
+
+      
+
+      
+        <h3 id="api.v1.State">State</h3>
+        <p></p>
+        <table class="enum-table">
+          <thead>
+            <tr><td>Name</td><td>Number</td><td>Description</td></tr>
+          </thead>
+          <tbody>
+            
+              <tr>
+                <td>STATE_UNSPECIFIED</td>
+                <td>0</td>
+                <td><p></p></td>
+              </tr>
+            
+              <tr>
+                <td>ACTIVE</td>
+                <td>1</td>
+                <td><p></p></td>
+              </tr>
+            
+              <tr>
+                <td>DELETED</td>
+                <td>2</td>
+                <td><p></p></td>
+              </tr>
+            
+          </tbody>
+        </table>
+      
+
+      
+
+      
+    
+      
+      <div class="file-heading">
         <h2 id="v1/hello_service.proto">v1/hello_service.proto</h2><a href="#title">Top</a>
       </div>
       <p></p>
 
       
-        <h3 id="api.v1.Req">Req</h3>
+        <h3 id="api.v1.Database">Database</h3>
+        <p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>name</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>The name of the database.
+Format: instances/{instance}/databases/{database}
+{database} is the database name in the instance. </p></td>
+                </tr>
+              
+                <tr>
+                  <td>sync_state</td>
+                  <td><a href="#api.v1.State">State</a></td>
+                  <td></td>
+                  <td><p>The existence of a database on latest sync. </p></td>
+                </tr>
+              
+                <tr>
+                  <td>successful_sync_time</td>
+                  <td><a href="#google.protobuf.Timestamp">google.protobuf.Timestamp</a></td>
+                  <td></td>
+                  <td><p>The latest synchronization time. </p></td>
+                </tr>
+              
+                <tr>
+                  <td>project</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>The project for a database.
+Format: projects/{project} </p></td>
+                </tr>
+              
+                <tr>
+                  <td>schema_version</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>The version of database schema. </p></td>
+                </tr>
+              
+                <tr>
+                  <td>environment</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>The environment resource.
+Format: environments/prod where prod is the environment resource ID. </p></td>
+                </tr>
+              
+                <tr>
+                  <td>effective_environment</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>The effective environment based on environment tag above and environment
+tag on the instance. Inheritance follows
+https://cloud.google.com/resource-manager/docs/tags/tags-overview. </p></td>
+                </tr>
+              
+                <tr>
+                  <td>labels</td>
+                  <td><a href="#api.v1.Database.LabelsEntry">Database.LabelsEntry</a></td>
+                  <td>repeated</td>
+                  <td><p>Labels will be used for deployment and policy control. </p></td>
+                </tr>
+              
+                <tr>
+                  <td>backup_available</td>
+                  <td><a href="#bool">bool</a></td>
+                  <td></td>
+                  <td><p>The database is available for DML prior backup. </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="api.v1.Database.LabelsEntry">Database.LabelsEntry</h3>
+        <p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>key</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>value</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="api.v1.GetDatabaseRequest">GetDatabaseRequest</h3>
+        <p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>name</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>The name of the database to retrieve.
+Format: instances/{instance}/databases/{database} </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="api.v1.GetUserRequest">GetUserRequest</h3>
         <p>请求参数</p>
 
         
@@ -387,7 +599,40 @@
                   <td>age</td>
                   <td><a href="#int32">int32</a></td>
                   <td></td>
-                  <td><p>年龄 </p></td>
+                  <td><p>字段解释描述文本
+
+syntax. CEL is a C-like expression language. The syntax and semantics of CEL
+
+are documented at https://github.com/google/cel-spec.
+{
+  &#34;age&#34;: 25,
+  &#34;purchase_date&#34;: {
+    &#34;seconds&#34;: 1680054400, // 2023-03-27T00:00:00Z
+    &#34;nanos&#34;: 0
+  },
+  &#34;delivery_date&#34;: {
+    &#34;seconds&#34;: 1680140800, // 2023-03-28T00:00:00Z
+    &#34;nanos&#34;: 0
+  },
+  &#34;name&#34;: &#34;productA&#34;,
+  &#34;custom_expr&#34;: {
+    // 自定义表达式的JSON表示，根据具体需求填充
+    &#34;expr&#34;: &#34;value &gt; 10&#34;,
+    &#34;type&#34;: &#34;BOOL&#34;
+  }
+}
+
+段落1:
+
+    标题1
+    这就是描述1
+    document.summary.size() &lt; 100
+
+段落2: 
+
+    标题2
+    这就是描述2
+    document.owner == request.auth.claims.email </p></td>
                 </tr>
               
                 <tr>
@@ -409,6 +654,13 @@
                   <td><a href="#string">string</a></td>
                   <td></td>
                   <td><p>物品名 </p></td>
+                </tr>
+              
+                <tr>
+                  <td>custom_expr</td>
+                  <td><a href="#google.type.Expr">google.type.Expr</a></td>
+                  <td></td>
+                  <td><p>自定义表达式 </p></td>
                 </tr>
               
             </tbody>
@@ -442,6 +694,13 @@
                   <td><p>用户名 </p></td>
                 </tr>
               
+                <tr>
+                  <td>son</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
             </tbody>
           </table>
 
@@ -465,10 +724,19 @@
             
               <tr>
                 <td>GetUser</td>
-                <td><a href="#api.v1.Req">Req</a></td>
+                <td><a href="#api.v1.GetUserRequest">GetUserRequest</a></td>
                 <td><a href="#api.v1.User">User</a></td>
-                <td><p>获取用户信息
-@openapi.security: BearerAuth</p></td>
+                <td><p>获取用户信息</p></td>
+              </tr>
+            
+              <tr>
+                <td>GetDatabase</td>
+                <td><a href="#api.v1.GetDatabaseRequest">GetDatabaseRequest</a></td>
+                <td><a href="#api.v1.Database">Database</a></td>
+                <td><p>使用&lt;br&gt;换行
+instances/*/databases/*的注解&lt;br&gt;
+Gets the database with the given name.&lt;br&gt;
+The name must be in the format: instances/{instance}/databases/{database}.</p></td>
               </tr>
             
           </tbody>
@@ -496,6 +764,23 @@
                 <td>POST</td>
                 <td>/v1/{name=users/*}</td>
                 <td>*</td>
+              </tr>
+              
+              <tr>
+                <td>GetUser</td>
+                <td>GET</td>
+                <td>/v1/{age=users/*}</td>
+                <td></td>
+              </tr>
+              
+            
+              
+              
+              <tr>
+                <td>GetDatabase</td>
+                <td>GET</td>
+                <td>/v1/{name=instances/*/databases/*}</td>
+                <td></td>
               </tr>
               
             

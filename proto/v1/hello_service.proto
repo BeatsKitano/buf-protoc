@@ -3,14 +3,15 @@ syntax = "proto3";
 package api.v1;
 option go_package = "api/v1";
  
-import "google/api/client.proto";
-
+import "google/api/client.proto"; 
 import "google/api/annotations.proto"; 
 import "google/api/resource.proto";
 import "google/api/field_behavior.proto";
+import "google/type/expr.proto";
 import "google/protobuf/timestamp.proto"; 
 import "buf/validate/validate.proto";
 import "v1/annotation.proto";
+import "v1/common.proto";
 
 // 提供问候语服务。
 // 1. 服务级别的注解 option (google.api.default_host) = "https://huige.api.com";
@@ -26,12 +27,14 @@ service HelloService {
  
 
   // 获取用户信息 
-  rpc GetUser(Req) returns (User) {
+  rpc GetUser(GetUserRequest) returns (User) {
     option (google.api.http) = {
       post: "/v1/{name=users/*}", 
       body: "*" 
+      // 额外绑定一个路径
+      additional_bindings: {get: "/v1/{age=users/*}"}
     }; 
-    // 2. 方法级别的注解
+    // 方法级别的注解
     option (api.v1.method_extend) = {
       auth_method : 1,
       audit: true,
@@ -41,19 +44,62 @@ service HelloService {
       timeout: 1000
     };
   }
+
+  // 使用<br>换行
+  // instances/*/databases/*的注解<br>
+  // Gets the database with the given name.<br>
+  // The name must be in the format: instances/{instance}/databases/{database}.
+  rpc GetDatabase(GetDatabaseRequest) returns (Database) {
+    option (google.api.http) = {get: "/v1/{name=instances/*/databases/*}"};
+  }
 } 
 
 // 请求参数
-message Req {    
+message GetUserRequest {    
   // 1. 字段级别的注解1
   option (google.api.resource) = {
     type: "x.x.xcom/Log";
     pattern: "{project}/logs/{log}" // 或 {folder}/logs/{log}，取决于父级资源
   };
  
-  // 年龄 
+  
+  // 字段解释描述文本
+  // 
+  // syntax. CEL is a C-like expression language. The syntax and semantics of CEL
+  // 
+  // are documented at https://github.com/google/cel-spec.
+  // {
+  //   "age": 25,
+  //   "purchase_date": {
+  //     "seconds": 1680054400, // 2023-03-27T00:00:00Z
+  //     "nanos": 0
+  //   },
+  //   "delivery_date": {
+  //     "seconds": 1680140800, // 2023-03-28T00:00:00Z
+  //     "nanos": 0
+  //   },
+  //   "name": "productA",
+  //   "custom_expr": {
+  //     // 自定义表达式的JSON表示，根据具体需求填充
+  //     "expr": "value > 10",
+  //     "type": "BOOL"
+  //   }
+  // }
+  //
+  // 段落1:
+  //
+  //     标题1
+  //     这就是描述1
+  //     document.summary.size() < 100
+  //
+  // 段落2: 
+  // 
+  //     标题2
+  //     这就是描述2
+  //     document.owner == request.auth.claims.email
+  //
   int32 age = 3 [(buf.validate.field).cel = {
-    id: "req.age",
+    id: "GetUserRequest.age",
     expression: "this < 18 ? '用户至少年满18岁': ''"
   }];
     
@@ -65,15 +111,70 @@ message Req {
 
   // 购买日期要求说明
   option (buf.validate.message).cel = {
-    id: "req.delivery_date",
+    id: "GetUserRequest.delivery_date",
     message: "delivery date 必须在 purchase date之后",
     expression: "this.delivery_date > this.purchase_date"
   };
 
   // 物品名
   string name = 10 [(google.api.field_behavior) = REQUIRED];
+
+  // 自定义表达式
+  google.type.Expr custom_expr = 11;
 }
 
+message GetDatabaseRequest {
+  // The name of the database to retrieve.
+  // Format: instances/{instance}/databases/{database}
+  string name = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference) = {type: "xxx.com/Database"}
+  ];
+}
+
+
+
+message Database {
+  option (google.api.resource) = {
+    type: "huige.api.com/Database"
+    pattern: "instances/{instance}/databases/{database}"
+  };
+
+  reserved 2;
+
+  // The name of the database.
+  // Format: instances/{instance}/databases/{database}
+  // {database} is the database name in the instance.
+  string name = 1;
+
+  // The existence of a database on latest sync.
+  State sync_state = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+
+  // The latest synchronization time.
+  google.protobuf.Timestamp successful_sync_time = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
+
+  // The project for a database.
+  // Format: projects/{project}
+  string project = 5;
+
+  // The version of database schema.
+  string schema_version = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
+
+  // The environment resource.
+  // Format: environments/prod where prod is the environment resource ID.
+  string environment = 7 [(google.api.field_behavior) = OPTIONAL];
+
+  // The effective environment based on environment tag above and environment
+  // tag on the instance. Inheritance follows
+  // https://cloud.google.com/resource-manager/docs/tags/tags-overview.
+  string effective_environment = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
+
+  // Labels will be used for deployment and policy control.
+  map<string, string> labels = 9;
+ 
+  // The database is available for DML prior backup.
+  bool backup_available = 11 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
 
 /*
 OPTIONAL = 1;
@@ -107,5 +208,9 @@ message User {
 
   // 用户名
   string name = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
-  
+
+  string son = 3 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference) = {child_type: "huige.api.com/User"}
+  ];
 }

@@ -10,8 +10,14 @@
   
     - [File-level Extensions](#v1_annotation-proto-extensions)
   
+- [v1/common.proto](#v1_common-proto)
+    - [State](#api-v1-State)
+  
 - [v1/hello_service.proto](#v1_hello_service-proto)
-    - [Req](#api-v1-Req)
+    - [Database](#api-v1-Database)
+    - [Database.LabelsEntry](#api-v1-Database-LabelsEntry)
+    - [GetDatabaseRequest](#api-v1-GetDatabaseRequest)
+    - [GetUserRequest](#api-v1-GetUserRequest)
     - [User](#api-v1-User)
   
     - [HelloService](#api-v1-HelloService)
@@ -79,6 +85,35 @@
 
 
 
+<a name="v1_common-proto"></a>
+<p align="right"><a href="#top">Top</a></p>
+
+## v1/common.proto
+
+
+ 
+
+
+<a name="api-v1-State"></a>
+
+### State
+
+
+| Name | Number | Description |
+| ---- | ------ | ----------- |
+| STATE_UNSPECIFIED | 0 |  |
+| ACTIVE | 1 |  |
+| DELETED | 2 |  |
+
+
+ 
+
+ 
+
+ 
+
+
+
 <a name="v1_hello_service-proto"></a>
 <p align="right"><a href="#top">Top</a></p>
 
@@ -86,18 +121,85 @@
 
 
 
-<a name="api-v1-Req"></a>
+<a name="api-v1-Database"></a>
 
-### Req
+### Database
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| name | [string](#string) |  | The name of the database. Format: instances/{instance}/databases/{database} {database} is the database name in the instance. |
+| sync_state | [State](#api-v1-State) |  | The existence of a database on latest sync. |
+| successful_sync_time | [google.protobuf.Timestamp](#google-protobuf-Timestamp) |  | The latest synchronization time. |
+| project | [string](#string) |  | The project for a database. Format: projects/{project} |
+| schema_version | [string](#string) |  | The version of database schema. |
+| environment | [string](#string) |  | The environment resource. Format: environments/prod where prod is the environment resource ID. |
+| effective_environment | [string](#string) |  | The effective environment based on environment tag above and environment tag on the instance. Inheritance follows https://cloud.google.com/resource-manager/docs/tags/tags-overview. |
+| labels | [Database.LabelsEntry](#api-v1-Database-LabelsEntry) | repeated | Labels will be used for deployment and policy control. |
+| backup_available | [bool](#bool) |  | The database is available for DML prior backup. |
+
+
+
+
+
+
+<a name="api-v1-Database-LabelsEntry"></a>
+
+### Database.LabelsEntry
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| key | [string](#string) |  |  |
+| value | [string](#string) |  |  |
+
+
+
+
+
+
+<a name="api-v1-GetDatabaseRequest"></a>
+
+### GetDatabaseRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| name | [string](#string) |  | The name of the database to retrieve. Format: instances/{instance}/databases/{database} |
+
+
+
+
+
+
+<a name="api-v1-GetUserRequest"></a>
+
+### GetUserRequest
 请求参数
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| age | [int32](#int32) |  | 年龄 |
+| age | [int32](#int32) |  | 字段解释描述文本
+
+syntax. CEL is a C-like expression language. The syntax and semantics of CEL
+
+are documented at https://github.com/google/cel-spec. { &#34;age&#34;: 25, &#34;purchase_date&#34;: { &#34;seconds&#34;: 1680054400, // 2023-03-27T00:00:00Z &#34;nanos&#34;: 0 }, &#34;delivery_date&#34;: { &#34;seconds&#34;: 1680140800, // 2023-03-28T00:00:00Z &#34;nanos&#34;: 0 }, &#34;name&#34;: &#34;productA&#34;, &#34;custom_expr&#34;: { // 自定义表达式的JSON表示，根据具体需求填充 &#34;expr&#34;: &#34;value &gt; 10&#34;, &#34;type&#34;: &#34;BOOL&#34; } }
+
+段落1:
+
+ 标题1 这就是描述1 document.summary.size() &lt; 100
+
+段落2: 
+
+ 标题2 这就是描述2 document.owner == request.auth.claims.email |
 | purchase_date | [google.protobuf.Timestamp](#google-protobuf-Timestamp) |  | 购买日期 |
 | delivery_date | [google.protobuf.Timestamp](#google-protobuf-Timestamp) |  | 交付日期 |
 | name | [string](#string) |  | 物品名 |
+| custom_expr | [google.type.Expr](#google-type-Expr) |  | 自定义表达式 |
 
 
 
@@ -114,6 +216,7 @@
 | ----- | ---- | ----- | ----------- |
 | id | [string](#string) |  | 用户id |
 | name | [string](#string) |  | 用户名 |
+| son | [string](#string) |  |  |
 
 
 
@@ -138,7 +241,8 @@
 
 | Method Name | Request Type | Response Type | Description |
 | ----------- | ------------ | ------------- | ------------|
-| GetUser | [Req](#api-v1-Req) | [User](#api-v1-User) | 获取用户信息 @openapi.security: BearerAuth |
+| GetUser | [GetUserRequest](#api-v1-GetUserRequest) | [User](#api-v1-User) | 获取用户信息 |
+| GetDatabase | [GetDatabaseRequest](#api-v1-GetDatabaseRequest) | [Database](#api-v1-Database) | 使用&lt;br&gt;换行 instances/*/databases/*的注解&lt;br&gt; Gets the database with the given name.&lt;br&gt; The name must be in the format: instances/{instance}/databases/{database}. |
 
  
 

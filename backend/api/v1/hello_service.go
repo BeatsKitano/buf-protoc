@@ -15,7 +15,7 @@ func NewHelloService() *HelloService {
 	return &HelloService{}
 }
 
-func (s *HelloService) GetUser(ctx context.Context, req *v1pb.Req) (*v1pb.User, error) {
+func (s *HelloService) GetUser(ctx context.Context, req *v1pb.GetUserRequest) (*v1pb.User, error) {
 	return &v1pb.User{
 		Name: "John Doe",
 	}, nil

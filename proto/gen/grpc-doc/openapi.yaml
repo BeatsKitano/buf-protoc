@@ -15,13 +15,118 @@ info:
 servers:
     - url: https://huige.api.com
 paths:
-    /v1/users/{user}:
-        post:
+    /v1/instances/{instance}/databases/{database}:
+        get:
             tags:
                 - HelloService
             description: |-
-                获取用户信息
-                 @openapi.security: BearerAuth
+                使用<br>换行
+                 instances/*/databases/*的注解<br>
+                 Gets the database with the given name.<br>
+                 The name must be in the format: instances/{instance}/databases/{database}.
+            operationId: HelloService_GetDatabase
+            parameters:
+                - name: instance
+                  in: path
+                  description: The instance id.
+                  required: true
+                  schema:
+                    type: string
+                - name: database
+                  in: path
+                  description: The database id.
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Database'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/users/{user}:
+        get:
+            tags:
+                - HelloService
+            description: 获取用户信息
+            operationId: HelloService_GetUser
+            parameters:
+                - name: user
+                  in: path
+                  description: The user id.
+                  required: true
+                  schema:
+                    type: string
+                - name: purchaseDate
+                  in: query
+                  description: 购买日期
+                  schema:
+                    type: string
+                    format: date-time
+                - name: deliveryDate
+                  in: query
+                  description: 交付日期
+                  schema:
+                    type: string
+                    format: date-time
+                - name: name
+                  in: query
+                  description: 物品名
+                  schema:
+                    type: string
+                - name: customExpr.expression
+                  in: query
+                  description: |-
+                    Textual representation of an expression in Common Expression Language
+                     syntax.
+                  schema:
+                    type: string
+                - name: customExpr.title
+                  in: query
+                  description: |-
+                    Optional. Title for the expression, i.e. a short string describing
+                     its purpose. This can be used e.g. in UIs which allow to enter the
+                     expression.
+                  schema:
+                    type: string
+                - name: customExpr.description
+                  in: query
+                  description: |-
+                    Optional. Description of the expression. This is a longer text which
+                     describes the expression, e.g. when hovered over it in a UI.
+                  schema:
+                    type: string
+                - name: customExpr.location
+                  in: query
+                  description: |-
+                    Optional. String indicating the location of the expression for error
+                     reporting, e.g. a file name and a position in the file.
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/User'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+        post:
+            tags:
+                - HelloService
+            description: 获取用户信息
             operationId: HelloService_GetUser
             parameters:
                 - name: user
@@ -34,7 +139,7 @@ paths:
                 content:
                     application/json:
                         schema:
-                            $ref: '#/components/schemas/Req'
+                            $ref: '#/components/schemas/GetUserRequest'
                 required: true
             responses:
                 "200":
@@ -51,22 +156,123 @@ paths:
                                 $ref: '#/components/schemas/Status'
 components:
     schemas:
-        GoogleProtobufAny:
+        Database:
             type: object
             properties:
-                '@type':
+                name:
                     type: string
-                    description: The type of the serialized message.
-            additionalProperties: true
-            description: Contains an arbitrary serialized message along with a @type that describes the type of the serialized message.
-        Req:
+                    description: |-
+                        The name of the database.
+                         Format: instances/{instance}/databases/{database}
+                         {database} is the database name in the instance.
+                syncState:
+                    readOnly: true
+                    enum:
+                        - STATE_UNSPECIFIED
+                        - ACTIVE
+                        - DELETED
+                    type: string
+                    description: The existence of a database on latest sync.
+                    format: enum
+                successfulSyncTime:
+                    readOnly: true
+                    type: string
+                    description: The latest synchronization time.
+                    format: date-time
+                project:
+                    type: string
+                    description: |-
+                        The project for a database.
+                         Format: projects/{project}
+                schemaVersion:
+                    readOnly: true
+                    type: string
+                    description: The version of database schema.
+                environment:
+                    type: string
+                    description: |-
+                        The environment resource.
+                         Format: environments/prod where prod is the environment resource ID.
+                effectiveEnvironment:
+                    readOnly: true
+                    type: string
+                    description: |-
+                        The effective environment based on environment tag above and environment
+                         tag on the instance. Inheritance follows
+                         https://cloud.google.com/resource-manager/docs/tags/tags-overview.
+                labels:
+                    type: object
+                    additionalProperties:
+                        type: string
+                    description: Labels will be used for deployment and policy control.
+                backupAvailable:
+                    readOnly: true
+                    type: boolean
+                    description: The database is available for DML prior backup.
+        Expr:
+            type: object
+            properties:
+                expression:
+                    type: string
+                    description: |-
+                        Textual representation of an expression in Common Expression Language
+                         syntax.
+                title:
+                    type: string
+                    description: |-
+                        Optional. Title for the expression, i.e. a short string describing
+                         its purpose. This can be used e.g. in UIs which allow to enter the
+                         expression.
+                description:
+                    type: string
+                    description: |-
+                        Optional. Description of the expression. This is a longer text which
+                         describes the expression, e.g. when hovered over it in a UI.
+                location:
+                    type: string
+                    description: |-
+                        Optional. String indicating the location of the expression for error
+                         reporting, e.g. a file name and a position in the file.
+            description: |-
+                Represents a textual expression in the Common Expression Language (CEL)
+                 syntax. CEL is a C-like expression language. The syntax and semantics of CEL
+                 are documented at https://github.com/google/cel-spec.
+
+                 Example (Comparison):
+
+                     title: "Summary size limit"
+                     description: "Determines if a summary is less than 100 chars"
+                     expression: "document.summary.size() < 100"
+
+                 Example (Equality):
+
+                     title: "Requestor is owner"
+                     description: "Determines if requestor is the document owner"
+                     expression: "document.owner == request.auth.claims.email"
+
+                 Example (Logic):
+
+                     title: "Public documents"
+                     description: "Determine whether the document should be publicly visible"
+                     expression: "document.type != 'private' && document.type != 'internal'"
+
+                 Example (Data Manipulation):
+
+                     title: "Notification string"
+                     description: "Create a notification string with a timestamp."
+                     expression: "'New message received at ' + string(document.create_time)"
+
+                 The exact variables and functions that may be referenced within an expression
+                 are determined by the service that evaluates it. See the service
+                 documentation for additional information.
+        GetUserRequest:
             required:
                 - name
             type: object
             properties:
                 age:
                     type: integer
-                    description: 年龄
+                    description: "字段解释描述文本\n \n syntax. CEL is a C-like expression language. The syntax and semantics of CEL\n \n are documented at https://github.com/google/cel-spec.\n {\n   \"age\": 25,\n   \"purchase_date\": {\n     \"seconds\": 1680054400, // 2023-03-27T00:00:00Z\n     \"nanos\": 0\n   },\n   \"delivery_date\": {\n     \"seconds\": 1680140800, // 2023-03-28T00:00:00Z\n     \"nanos\": 0\n   },\n   \"name\": \"productA\",\n   \"custom_expr\": {\n     // 自定义表达式的JSON表示，根据具体需求填充\n     \"expr\": \"value > 10\",\n     \"type\": \"BOOL\"\n   }\n }\n\n 段落1:\n\n     标题1\n     这就是描述1\n     document.summary.size() < 100\n\n 段落2: \n \n     标题2\n     这就是描述2\n     document.owner == request.auth.claims.email"
                     format: int32
                 purchaseDate:
                     type: string
@@ -79,7 +285,19 @@ components:
                 name:
                     type: string
                     description: 物品名
+                customExpr:
+                    allOf:
+                        - $ref: '#/components/schemas/Expr'
+                    description: 自定义表达式
             description: 请求参数
+        GoogleProtobufAny:
+            type: object
+            properties:
+                '@type':
+                    type: string
+                    description: The type of the serialized message.
+            additionalProperties: true
+            description: Contains an arbitrary serialized message along with a @type that describes the type of the serialized message.
         Status:
             type: object
             properties:
@@ -97,6 +315,8 @@ components:
                     description: A list of messages that carry the error details.  There is a common set of message types for APIs to use.
             description: 'The `Status` type defines a logical error model that is suitable for different programming environments, including REST APIs and RPC APIs. It is used by [gRPC](https://github.com/grpc). Each `Status` message contains three pieces of data: error code, error message, and error details. You can find out more about this error model and how to work with it in the [API Design Guide](https://cloud.google.com/apis/design/errors).'
         User:
+            required:
+                - son
             type: object
             properties:
                 id:
@@ -107,6 +327,8 @@ components:
                     readOnly: true
                     type: string
                     description: 用户名
+                son:
+                    type: string
             description: 用户信息
 tags:
     - name: HelloService

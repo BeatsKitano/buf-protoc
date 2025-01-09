@@ -16,9 +16,125 @@
     "application/json"
   ],
   "paths": {
+    "/v1/{age}": {
+      "get": {
+        "summary": "获取用户信息",
+        "operationId": "HelloService_GetUser2",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1User"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "age",
+            "description": "字段解释描述文本\n\nsyntax. CEL is a C-like expression language. The syntax and semantics of CEL\n\nare documented at https://github.com/google/cel-spec.\n{\n  \"age\": 25,\n  \"purchase_date\": {\n    \"seconds\": 1680054400, // 2023-03-27T00:00:00Z\n    \"nanos\": 0\n  },\n  \"delivery_date\": {\n    \"seconds\": 1680140800, // 2023-03-28T00:00:00Z\n    \"nanos\": 0\n  },\n  \"name\": \"productA\",\n  \"custom_expr\": {\n    // 自定义表达式的JSON表示，根据具体需求填充\n    \"expr\": \"value \u003e 10\",\n    \"type\": \"BOOL\"\n  }\n}\n\n段落1:\n\n    标题1\n    这就是描述1\n    document.summary.size() \u003c 100\n\n段落2: \n\n    标题2\n    这就是描述2\n    document.owner == request.auth.claims.email",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "format": "int32",
+            "pattern": "users/[^/]+"
+          },
+          {
+            "name": "purchaseDate",
+            "description": "购买日期",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "date-time"
+          },
+          {
+            "name": "deliveryDate",
+            "description": "交付日期",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "date-time"
+          },
+          {
+            "name": "name",
+            "description": "物品名",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "customExpr.expression",
+            "description": "Textual representation of an expression in Common Expression Language\nsyntax.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "customExpr.title",
+            "description": "Optional. Title for the expression, i.e. a short string describing\nits purpose. This can be used e.g. in UIs which allow to enter the\nexpression.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "customExpr.description",
+            "description": "Optional. Description of the expression. This is a longer text which\ndescribes the expression, e.g. when hovered over it in a UI.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "customExpr.location",
+            "description": "Optional. String indicating the location of the expression for error\nreporting, e.g. a file name and a position in the file.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "HelloService"
+        ]
+      }
+    },
     "/v1/{name}": {
+      "get": {
+        "summary": "使用\u003cbr\u003e换行\ninstances/*/databases/*的注解\u003cbr\u003e\nGets the database with the given name.\u003cbr\u003e\nThe name must be in the format: instances/{instance}/databases/{database}.",
+        "operationId": "HelloService_GetDatabase",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1Database"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "name",
+            "description": "The name of the database to retrieve.\nFormat: instances/{instance}/databases/{database}",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "pattern": "instances/[^/]+/databases/[^/]+"
+          }
+        ],
+        "tags": [
+          "HelloService"
+        ]
+      },
       "post": {
-        "summary": "获取用户信息\n@openapi.security: BearerAuth",
+        "summary": "获取用户信息",
         "operationId": "HelloService_GetUser",
         "responses": {
           "200": {
@@ -65,7 +181,8 @@
         "age": {
           "type": "integer",
           "format": "int32",
-          "title": "年龄"
+          "description": "syntax. CEL is a C-like expression language. The syntax and semantics of CEL\n\nare documented at https://github.com/google/cel-spec.\n{\n  \"age\": 25,\n  \"purchase_date\": {\n    \"seconds\": 1680054400, // 2023-03-27T00:00:00Z\n    \"nanos\": 0\n  },\n  \"delivery_date\": {\n    \"seconds\": 1680140800, // 2023-03-28T00:00:00Z\n    \"nanos\": 0\n  },\n  \"name\": \"productA\",\n  \"custom_expr\": {\n    // 自定义表达式的JSON表示，根据具体需求填充\n    \"expr\": \"value \u003e 10\",\n    \"type\": \"BOOL\"\n  }\n}\n\n段落1:\n\n    标题1\n    这就是描述1\n    document.summary.size() \u003c 100\n\n段落2: \n\n    标题2\n    这就是描述2\n    document.owner == request.auth.claims.email",
+          "title": "字段解释描述文本"
         },
         "purchaseDate": {
           "type": "string",
@@ -76,6 +193,10 @@
           "type": "string",
           "format": "date-time",
           "title": "交付日期"
+        },
+        "customExpr": {
+          "$ref": "#/definitions/typeExpr",
+          "title": "自定义表达式"
         }
       },
       "title": "请求参数"
@@ -108,6 +229,87 @@
         }
       }
     },
+    "typeExpr": {
+      "type": "object",
+      "properties": {
+        "expression": {
+          "type": "string",
+          "description": "Textual representation of an expression in Common Expression Language\nsyntax."
+        },
+        "title": {
+          "type": "string",
+          "description": "Optional. Title for the expression, i.e. a short string describing\nits purpose. This can be used e.g. in UIs which allow to enter the\nexpression."
+        },
+        "description": {
+          "type": "string",
+          "description": "Optional. Description of the expression. This is a longer text which\ndescribes the expression, e.g. when hovered over it in a UI."
+        },
+        "location": {
+          "type": "string",
+          "description": "Optional. String indicating the location of the expression for error\nreporting, e.g. a file name and a position in the file."
+        }
+      },
+      "description": "Represents a textual expression in the Common Expression Language (CEL)\nsyntax. CEL is a C-like expression language. The syntax and semantics of CEL\nare documented at https://github.com/google/cel-spec.\n\nExample (Comparison):\n\n    title: \"Summary size limit\"\n    description: \"Determines if a summary is less than 100 chars\"\n    expression: \"document.summary.size() \u003c 100\"\n\nExample (Equality):\n\n    title: \"Requestor is owner\"\n    description: \"Determines if requestor is the document owner\"\n    expression: \"document.owner == request.auth.claims.email\"\n\nExample (Logic):\n\n    title: \"Public documents\"\n    description: \"Determine whether the document should be publicly visible\"\n    expression: \"document.type != 'private' \u0026\u0026 document.type != 'internal'\"\n\nExample (Data Manipulation):\n\n    title: \"Notification string\"\n    description: \"Create a notification string with a timestamp.\"\n    expression: \"'New message received at ' + string(document.create_time)\"\n\nThe exact variables and functions that may be referenced within an expression\nare determined by the service that evaluates it. See the service\ndocumentation for additional information."
+    },
+    "v1Database": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The name of the database.\nFormat: instances/{instance}/databases/{database}\n{database} is the database name in the instance."
+        },
+        "syncState": {
+          "$ref": "#/definitions/v1State",
+          "description": "The existence of a database on latest sync.",
+          "readOnly": true
+        },
+        "successfulSyncTime": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The latest synchronization time.",
+          "readOnly": true
+        },
+        "project": {
+          "type": "string",
+          "title": "The project for a database.\nFormat: projects/{project}"
+        },
+        "schemaVersion": {
+          "type": "string",
+          "description": "The version of database schema.",
+          "readOnly": true
+        },
+        "environment": {
+          "type": "string",
+          "description": "The environment resource.\nFormat: environments/prod where prod is the environment resource ID."
+        },
+        "effectiveEnvironment": {
+          "type": "string",
+          "description": "The effective environment based on environment tag above and environment\ntag on the instance. Inheritance follows\nhttps://cloud.google.com/resource-manager/docs/tags/tags-overview.",
+          "readOnly": true
+        },
+        "labels": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Labels will be used for deployment and policy control."
+        },
+        "backupAvailable": {
+          "type": "boolean",
+          "description": "The database is available for DML prior backup.",
+          "readOnly": true
+        }
+      }
+    },
+    "v1State": {
+      "type": "string",
+      "enum": [
+        "STATE_UNSPECIFIED",
+        "ACTIVE",
+        "DELETED"
+      ],
+      "default": "STATE_UNSPECIFIED"
+    },
     "v1User": {
       "type": "object",
       "properties": {
@@ -120,9 +322,15 @@
           "type": "string",
           "title": "用户名",
           "readOnly": true
+        },
+        "son": {
+          "type": "string"
         }
       },
-      "title": "用户信息"
+      "title": "用户信息",
+      "required": [
+        "son"
+      ]
     }
   }
 }
