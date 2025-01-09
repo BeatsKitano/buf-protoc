@@ -13,9 +13,9 @@ import (
 	"buf-protoc/backend/interceptor/timeout"
 	"buf-protoc/backend/interceptor/validator"
 
-	"buf-protoc/component/state"
+	"buf-protoc/backend/component/state"
 
-	"buf-protoc/component/config"
+	"buf-protoc/backend/component/config"
 
 	v1pb "buf-protoc/proto/gen/go/v1"
 

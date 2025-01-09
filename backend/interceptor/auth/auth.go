@@ -18,9 +18,9 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	errs "github.com/pkg/errors"
 
-	"buf-protoc/common"
-	"buf-protoc/component/config"
-	"buf-protoc/component/state"
+	"buf-protoc/backend/common"
+	"buf-protoc/backend/component/config"
+	"buf-protoc/backend/component/state"
 	v1pb "buf-protoc/proto/gen/go/v1"
 )
 

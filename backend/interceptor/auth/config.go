@@ -3,7 +3,7 @@ package auth
 import (
 	"strings"
 
-	"buf-protoc/common"
+	"buf-protoc/backend/common"
 )
 
 // IsAuthenticationAllowed returns whether the method is exempted from authentication.

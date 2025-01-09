@@ -5,7 +5,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	"buf-protoc/common" 
+	"buf-protoc/backend/common"
 )
 
 // Profile is the configuration to start main server.

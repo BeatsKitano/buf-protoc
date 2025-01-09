@@ -1,8 +1,8 @@
 package main
 
 import (
+	"buf-protoc/backend/component/config"
 	"buf-protoc/backend/server"
-	"buf-protoc/component/config"
 	"context"
 	"fmt"
 	"log/slog"
