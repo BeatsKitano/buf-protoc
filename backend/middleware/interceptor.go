@@ -1,5 +1,4 @@
-// Package auth handles the auth of gRPC server.
-package auth
+package middleware
 
 import (
 	"context"
@@ -8,20 +7,26 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
+	"buf-protoc/backend/common"
+	"buf-protoc/backend/component/config"
+	"buf-protoc/backend/component/iam"
+	"buf-protoc/backend/component/state"
+	v1pb "buf-protoc/proto/gen/go/v1"
+
+	"github.com/golang-jwt/jwt/v5"
+	"golang.org/x/time/rate"
+
+	errs "github.com/pkg/errors"
+
+	"github.com/bufbuild/protovalidate-go"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
-
-	"github.com/golang-jwt/jwt/v5"
-	errs "github.com/pkg/errors"
-
-	"buf-protoc/backend/common"
-	"buf-protoc/backend/component/config"
-	"buf-protoc/backend/component/state"
-	v1pb "buf-protoc/proto/gen/go/v1"
+	"google.golang.org/protobuf/proto"
 )
 
 const (
@@ -50,60 +55,140 @@ const (
 	GatewayMetadataRequestOriginKey = "bytebase-request-origin"
 )
 
-// APIAuthInterceptor is the auth interceptor for gRPC server.
-type APIAuthInterceptor struct {
-	methoder map[string]*v1pb.MethodExtend
-	secret   string
-	stateCfg *state.State
-	profile  *config.Profile
+var rateLimiter sync.Map
+
+// Interceptor is the interceptor for gRPC server.
+type Interceptor struct {
+	methoder   map[string]*v1pb.MethodExtend
+	authSecret string
+	iamManager *iam.Manager
+	stateCfg   *state.State
+	profile    *config.Profile
 }
 
 // New returns a new API auth interceptor.
 func New(
 	methoder map[string]*v1pb.MethodExtend,
-	secret string,
+	authSecret string,
+	iamManager *iam.Manager,
 	stateCfg *state.State,
 	profile *config.Profile,
-) *APIAuthInterceptor {
-	return &APIAuthInterceptor{
-		methoder: methoder,
-		secret:   secret,
-		stateCfg: stateCfg,
-		profile:  profile,
+) *Interceptor {
+	for k, v := range methoder {
+		if v.RateLimitPerMinute > 0 {
+			limiter := rate.NewLimiter(rate.Limit(v.RateLimitPerMinute*1.0/60.0), int(v.RateLimitPerMinute))
+			rateLimiter.Store(k, limiter)
+		}
+	}
+
+	return &Interceptor{
+		methoder:   methoder,
+		authSecret: authSecret,
+		iamManager: iamManager,
+		stateCfg:   stateCfg,
+		profile:    profile,
 	}
 }
 
-// AuthenticationInterceptor is the unary interceptor for gRPC API.
-func (in *APIAuthInterceptor) UnaryServerInterceptor(ctx context.Context, request any, serverInfo *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
-	md, ok := metadata.FromIncomingContext(ctx)
-	if !ok {
-		return nil, status.Errorf(codes.Unauthenticated, "failed to parse metadata from incoming context")
-	}
-	accessTokenStr, err := GetTokenFromMetadata(md)
-	if err != nil {
-		return nil, status.Error(codes.Unauthenticated, err.Error())
-	}
-
-	authContext, err := in.getAuthContext(serverInfo.FullMethod)
+// ratelimit
+// auth
+// permission
+// validator
+// timeout
+func (in *Interceptor) UnaryServerInterceptor(ctx context.Context, request any, serverInfo *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
+	fullName := serverInfo.FullMethod
+	extend, err := in.getMethodExtend(fullName)
 	if err != nil {
 		return nil, err
 	}
-	ctx = context.WithValue(ctx, common.AuthContextKey, authContext)
 
-	principalID, err := in.getPrincipalID(ctx, accessTokenStr)
-	if err != nil {
-		if IsAuthenticationAllowed(serverInfo.FullMethod, authContext) {
-			return handler(ctx, request)
+	// 限流拦截
+	if extend.RateLimitPerMinute > 0 {
+		limiterAny, ok := rateLimiter.Load(fullName)
+		if ok {
+			limiter := limiterAny.(*rate.Limiter)
+			if !limiter.Allow() {
+				return nil, status.Errorf(codes.ResourceExhausted, "rate limit exceeded")
+			}
+		} else {
+			return nil, status.Errorf(codes.ResourceExhausted, "method %s is not found rate limit exceeded", fullName)
 		}
-		return nil, err
 	}
 
-	ctx = context.WithValue(ctx, common.PrincipalIDContextKey, principalID)
+	//认证拦截
+	if extend.AllowWithoutCredential == false {
+		md, ok := metadata.FromIncomingContext(ctx)
+		if !ok {
+			return nil, status.Errorf(codes.Unauthenticated, "failed to parse metadata from incoming context")
+		}
+		accessTokenStr, err := GetTokenFromMetadata(md)
+		if err != nil {
+			return nil, status.Error(codes.Unauthenticated, err.Error())
+		}
+
+		authContext, err := in.getAuthContext(serverInfo.FullMethod)
+		if err != nil {
+			return nil, err
+		}
+		ctx = context.WithValue(ctx, common.AuthContextKey, authContext)
+
+		userID, err := in.getUserID(ctx, accessTokenStr)
+		if err != nil {
+			if IsAuthenticationAllowed(serverInfo.FullMethod, authContext) {
+				return handler(ctx, request)
+			}
+			return nil, err
+		}
+
+		ctx = context.WithValue(ctx, common.UserIDContextKey, userID)
+	}
+
+	//权限拦截
+	if extend.Permission != "" {
+		if ok, err := in.iamManager.CheckPermission(ctx, extend.Permission); err != nil {
+			return nil, status.Error(codes.PermissionDenied, "permission denied")
+		} else if !ok {
+			return nil, status.Error(codes.PermissionDenied, "permission denied")
+		}
+	}
+
+	//参数校验拦截
+	if err := protovalidate.Validate(request.(proto.Message)); err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	//超时拦截
+	if extend.Timeout > 0 {
+		timeoutCtx, cancel := context.WithTimeout(ctx, time.Duration(extend.Timeout)*time.Millisecond)
+		defer cancel()
+
+		// 创建一个 channel 用于接收处理结果
+		resChan := make(chan interface{})
+		errChan := make(chan error)
+		go func() {
+			res, err := handler(timeoutCtx, request)
+			if err != nil {
+				errChan <- err
+			} else {
+				resChan <- res
+			}
+		}()
+
+		select {
+		case <-timeoutCtx.Done():
+			return nil, status.Errorf(codes.DeadlineExceeded, "request timed out")
+		case res := <-resChan:
+			return res, nil
+		case err := <-errChan:
+			return nil, err
+		}
+	}
+
 	return handler(ctx, request)
 }
 
 // AuthenticationStreamInterceptor is the unary interceptor for gRPC API.
-func (in *APIAuthInterceptor) UnaryServerStreamInterceptor(request any, ss grpc.ServerStream, serverInfo *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
+func (in *Interceptor) UnaryServerStreamInterceptor(request any, ss grpc.ServerStream, serverInfo *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 	ctx := ss.Context()
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
@@ -120,7 +205,7 @@ func (in *APIAuthInterceptor) UnaryServerStreamInterceptor(request any, ss grpc.
 	}
 	ctx = context.WithValue(ctx, common.AuthContextKey, authContext)
 
-	principalID, err := in.getPrincipalID(ctx, accessTokenStr)
+	userID, err := in.getUserID(ctx, accessTokenStr)
 	if err != nil {
 		if IsAuthenticationAllowed(serverInfo.FullMethod, authContext) {
 			return handler(request, ss)
@@ -128,7 +213,7 @@ func (in *APIAuthInterceptor) UnaryServerStreamInterceptor(request any, ss grpc.
 		return err
 	}
 
-	ctx = context.WithValue(ctx, common.PrincipalIDContextKey, principalID)
+	ctx = context.WithValue(ctx, common.UserIDContextKey, userID)
 	sss := overrideStream{ServerStream: ss, childCtx: ctx}
 	return handler(request, sss)
 }
@@ -142,7 +227,7 @@ func (s overrideStream) Context() context.Context {
 	return s.childCtx
 }
 
-func (in *APIAuthInterceptor) authenticate(ctx context.Context, accessTokenStr string) (int, error) {
+func (in *Interceptor) authenticate(ctx context.Context, accessTokenStr string) (int, error) {
 	if accessTokenStr == "" {
 		return 0, status.Errorf(codes.Unauthenticated, "access token not found")
 	}
@@ -156,7 +241,7 @@ func (in *APIAuthInterceptor) authenticate(ctx context.Context, accessTokenStr s
 		}
 		if kid, ok := t.Header["kid"].(string); ok {
 			if kid == "v1" {
-				return []byte(in.secret), nil
+				return []byte(in.authSecret), nil
 			}
 		}
 		return nil, status.Errorf(codes.Unauthenticated, "unexpected access token kid=%v", t.Header["kid"])
@@ -174,33 +259,33 @@ func (in *APIAuthInterceptor) authenticate(ctx context.Context, accessTokenStr s
 		)
 	}
 
-	principalID, err := strconv.Atoi(claims.Subject)
+	userID, err := strconv.Atoi(claims.Subject)
 	if err != nil {
 		return 0, status.Errorf(codes.Unauthenticated, "malformed ID %q in the access token", claims.Subject)
 	}
-	// user, err := in.store.GetUserByID(ctx, principalID)
+	// user, err := in.store.GetUserByID(ctx, userID)
 	// if err != nil {
-	// 	return 0, status.Errorf(codes.Unauthenticated, "failed to find user ID %q in the access token", principalID)
+	// 	return 0, status.Errorf(codes.Unauthenticated, "failed to find user ID %q in the access token", userID)
 	// }
 	// if user == nil {
-	// 	return 0, status.Errorf(codes.Unauthenticated, "user ID %q not exists in the access token", principalID)
+	// 	return 0, status.Errorf(codes.Unauthenticated, "user ID %q not exists in the access token", userID)
 	// }
 	// if user.MemberDeleted {
-	// 	return 0, status.Errorf(codes.Unauthenticated, "user ID %q has been deactivated by administrators", principalID)
+	// 	return 0, status.Errorf(codes.Unauthenticated, "user ID %q has been deactivated by administrators", userID)
 	// }
 
-	return principalID, nil
+	return userID, nil
 }
 
-func (in *APIAuthInterceptor) getPrincipalID(ctx context.Context, accessTokenStr string) (int, error) {
-	principalID, err := in.authenticate(ctx, accessTokenStr)
+func (in *Interceptor) getUserID(ctx context.Context, accessTokenStr string) (int, error) {
+	userID, err := in.authenticate(ctx, accessTokenStr)
 	if err != nil {
 		return 0, err
 	}
 
 	// Only update for authorized request.
 	in.profile.LastActiveTs = time.Now().Unix()
-	return principalID, nil
+	return userID, nil
 }
 
 // GetUserIDFromMFATempToken returns the user ID from the MFA temp token.
@@ -312,7 +397,7 @@ func generateToken(userName string, userID int, aud string, expirationTime time.
 	return tokenString, nil
 }
 
-func (in *APIAuthInterceptor) getAuthContext(fullMethod string) (*common.AuthContext, error) {
+func (in *Interceptor) getAuthContext(fullMethod string) (*common.AuthContext, error) {
 	if extend, ok := in.methoder[fullMethod]; ok {
 		am := extend.AuthMethod
 		var authMethod common.AuthMethod
@@ -335,4 +420,12 @@ func (in *APIAuthInterceptor) getAuthContext(fullMethod string) (*common.AuthCon
 	} else {
 		return nil, errs.Errorf("method %q not found in methoder", fullMethod)
 	}
+}
+
+func (in *Interceptor) getMethodExtend(fullMethod string) (*v1pb.MethodExtend, error) {
+	extend, ok := in.methoder[fullMethod]
+	if !ok {
+		return nil, status.Errorf(codes.ResourceExhausted, "method %s is not found rate limit exceeded", fullMethod)
+	}
+	return extend, nil
 }

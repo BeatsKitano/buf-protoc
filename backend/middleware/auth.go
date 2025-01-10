@@ -1,9 +1,8 @@
-package auth
+package middleware
 
 import (
-	"strings"
-
 	"buf-protoc/backend/common"
+	"strings"
 )
 
 // IsAuthenticationAllowed returns whether the method is exempted from authentication.

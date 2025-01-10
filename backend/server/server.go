@@ -8,12 +8,9 @@ import (
 	"net/http"
 	"time"
 
-	"buf-protoc/backend/interceptor/auth"
-	"buf-protoc/backend/interceptor/permission"
-	"buf-protoc/backend/interceptor/ratelimit"
-	"buf-protoc/backend/interceptor/timeout"
-	"buf-protoc/backend/interceptor/validator"
+	imiddleware "buf-protoc/backend/middleware"
 
+	"buf-protoc/backend/component/iam"
 	"buf-protoc/backend/component/state"
 
 	"buf-protoc/backend/component/config"
@@ -100,20 +97,11 @@ func NewServer(port string, profile *config.Profile) *Server {
 		panic(err)
 	}
 
-	authProvider := auth.New(server.methodExtends, "", state, profile)
-	ratelimitProvider := ratelimit.New(server.methodExtends)
-	timeoutProvider := timeout.New(server.methodExtends)
-	permissionProvider := permission.NewPermissionInterceptor(nil, server.methodExtends)
+	mdw := imiddleware.New(server.methodExtends, "", &iam.Manager{}, state, profile)
 
 	grpc.EnableTracing = true
 	server.grpcServer = grpc.NewServer(
-		grpc.ChainUnaryInterceptor(
-			authProvider.UnaryServerInterceptor,
-			permissionProvider.UnaryServerInterceptor(),
-			ratelimitProvider.UnaryServerInterceptor,
-			timeoutProvider.UnaryServerInterceptor,
-			validator.UnaryServerInterceptor(),
-		),
+		grpc.ChainUnaryInterceptor(mdw.UnaryServerInterceptor),
 		grpc.MaxRecvMsgSize(100*1024*1024),
 		grpc.InitialWindowSize(100000000),
 		grpc.InitialConnWindowSize(100000000),
