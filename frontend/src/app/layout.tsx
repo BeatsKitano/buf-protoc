@@ -30,7 +30,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <p>这是一个模板</p>
+        <p>这是RootLayout</p>
         <ClientLayout>
           {children}
         </ClientLayout>
