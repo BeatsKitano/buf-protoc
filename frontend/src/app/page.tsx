@@ -1,10 +1,9 @@
-import './global.css' 
-
-export default function App({ children }: { children: React.ReactNode }) {
+ 
+export default function App() {
   return (
-    <>
-      <h1>Hello, Next.js!</h1>
-      <p>This is the home page.</p>
-    </>
-  )
-} 
+    <div>
+      <p>这是app首页</p>
+    </div>
+  );
+}
+
