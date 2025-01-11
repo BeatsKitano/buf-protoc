@@ -1,8 +1,8 @@
-'use client';
-
+'use client'; 
 import { useQuery } from '@tanstack/react-query';
+import type { NextPage } from 'next';
 
-export default function Page() {
+const BlogPage: NextPage = () => {
   const { data, error, isLoading } = useQuery({
     queryKey: ['data'], // 查询键，用于缓存和重新获取
     queryFn: async () => {
@@ -16,11 +16,13 @@ export default function Page() {
 
   return (
     <>
-    <ul>
-      {data.map((blog) => (
-        <li key={blog.id}>{blog.title}</li>
-      ))}
-    </ul>
+      <ul>
+        {data.map((blog : any) => (
+          <li key={blog.id}>{blog.title}</li>
+        ))}
+      </ul>
     </>
-  )
-}
+  );
+};
+
+export default BlogPage;
