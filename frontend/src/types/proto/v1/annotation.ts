@@ -72,10 +72,10 @@ export interface MethodExtend {
    */
   audit: boolean;
   /**
-   * Rate limit per minute
-   * 每分钟的速率限制
+   * Rate limit per second
+   * 每秒的速率限制
    */
-  rateLimitPerMinute: number;
+  rateLimitPerSecond: number;
   /**
    * Timeout in milliseconds
    * 超时控制（毫秒）
@@ -95,7 +95,7 @@ function createBaseMethodExtend(): MethodExtend {
     permission: "",
     authMethod: 0,
     audit: false,
-    rateLimitPerMinute: 0,
+    rateLimitPerSecond: 0,
     timeout: 0,
     concurrent: 0,
   };
@@ -118,8 +118,8 @@ export const MethodExtend = {
     if (message.audit === true) {
       writer.uint32(800040).bool(message.audit);
     }
-    if (message.rateLimitPerMinute !== 0) {
-      writer.uint32(800048).int32(message.rateLimitPerMinute);
+    if (message.rateLimitPerSecond !== 0) {
+      writer.uint32(800048).int32(message.rateLimitPerSecond);
     }
     if (message.timeout !== 0) {
       writer.uint32(800056).int32(message.timeout);
@@ -177,7 +177,7 @@ export const MethodExtend = {
             break;
           }
 
-          message.rateLimitPerMinute = reader.int32();
+          message.rateLimitPerSecond = reader.int32();
           continue;
         case 100007:
           if (tag !== 800056) {
@@ -211,7 +211,7 @@ export const MethodExtend = {
       permission: isSet(object.permission) ? globalThis.String(object.permission) : "",
       authMethod: isSet(object.authMethod) ? authMethodFromJSON(object.authMethod) : 0,
       audit: isSet(object.audit) ? globalThis.Boolean(object.audit) : false,
-      rateLimitPerMinute: isSet(object.rateLimitPerMinute) ? globalThis.Number(object.rateLimitPerMinute) : 0,
+      rateLimitPerSecond: isSet(object.rateLimitPerSecond) ? globalThis.Number(object.rateLimitPerSecond) : 0,
       timeout: isSet(object.timeout) ? globalThis.Number(object.timeout) : 0,
       concurrent: isSet(object.concurrent) ? globalThis.Number(object.concurrent) : 0,
     };
@@ -234,8 +234,8 @@ export const MethodExtend = {
     if (message.audit === true) {
       obj.audit = message.audit;
     }
-    if (message.rateLimitPerMinute !== 0) {
-      obj.rateLimitPerMinute = Math.round(message.rateLimitPerMinute);
+    if (message.rateLimitPerSecond !== 0) {
+      obj.rateLimitPerSecond = Math.round(message.rateLimitPerSecond);
     }
     if (message.timeout !== 0) {
       obj.timeout = Math.round(message.timeout);
@@ -256,7 +256,7 @@ export const MethodExtend = {
     message.permission = object.permission ?? "";
     message.authMethod = object.authMethod ?? 0;
     message.audit = object.audit ?? false;
-    message.rateLimitPerMinute = object.rateLimitPerMinute ?? 0;
+    message.rateLimitPerSecond = object.rateLimitPerSecond ?? 0;
     message.timeout = object.timeout ?? 0;
     message.concurrent = object.concurrent ?? 0;
     return message;

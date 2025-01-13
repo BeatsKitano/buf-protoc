@@ -60,9 +60,9 @@ message MethodExtend {
   // Whether to audit the method
   // 是否审计该方法
   bool audit = 100005;
-  // Rate limit per minute
-  // 每分钟的速率限制
-  int32 rate_limit_per_minute = 100006; 
+  // Rate limit per second
+  // 每秒的速率限制
+  int32 rate_limit_per_second = 100006; 
   // Timeout in milliseconds 
   // 超时控制（毫秒）
   int32 timeout = 100007;

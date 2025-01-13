@@ -75,8 +75,10 @@ func New(
 	profile *config.Profile,
 ) *Interceptor {
 	for k, v := range methoder {
-		if v.RateLimitPerMinute > 0 {
-			limiter := rate.NewLimiter(rate.Limit(v.RateLimitPerMinute*1.0/60.0), int(v.RateLimitPerMinute))
+		if v.RateLimitPerSecond > 0 {
+			// bursts时突发流量的最大值
+			// rate = 10，bursts = 5 表示允许在 1 秒内处理的请求数（包括正常速率的请求和突发请求）是15
+			limiter := rate.NewLimiter(rate.Limit(v.RateLimitPerSecond), int(v.RateLimitPerSecond))
 			rateLimiter.Store(k, limiter)
 		}
 	}
@@ -95,6 +97,7 @@ func New(
 // permission
 // validator
 // timeout
+// audit审计日志
 func (in *Interceptor) UnaryServerInterceptor(ctx context.Context, request any, serverInfo *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
 	fullName := serverInfo.FullMethod
 	extend, err := in.getMethodExtend(fullName)
@@ -103,7 +106,7 @@ func (in *Interceptor) UnaryServerInterceptor(ctx context.Context, request any, 
 	}
 
 	// 限流拦截
-	if extend.RateLimitPerMinute > 0 {
+	if extend.RateLimitPerSecond > 0 {
 		limiterAny, ok := rateLimiter.Load(fullName)
 		if ok {
 			limiter := limiterAny.(*rate.Limiter)
@@ -182,9 +185,9 @@ func (in *Interceptor) UnaryServerInterceptor(ctx context.Context, request any, 
 		case err := <-errChan:
 			return nil, err
 		}
+	} else {
+		return handler(ctx, request)
 	}
-
-	return handler(ctx, request)
 }
 
 // AuthenticationStreamInterceptor is the unary interceptor for gRPC API.
